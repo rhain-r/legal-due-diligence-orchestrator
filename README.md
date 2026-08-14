@@ -1,95 +1,104 @@
 # Legal Due Diligence Orchestrator
 
-An Agentic AI architecture designed for law firms and enterprise compliance teams. This is not a simple document summarizer; it is a multi-agent system where different AI "personas" collaborate to audit legal contracts against strict Standard Operating Procedures (SOPs).
+**A multi-agent AI system that audits legal contracts against a firm's compliance SOP — and then argues with itself to make sure it's right.**
 
-Instead of paralegals spending hours scanning for missing clauses, a Lead Agent delegates document chunks to Worker Agents, who then report back to a Verifier Agent to ensure absolute accuracy and zero hallucinations.
-
----
-
-## Agentic Workflow Execution
-
-The workflow relies on a hierarchical agent structure. The Orchestrator receives the document and compliance checklist. It dispatches read-tasks to specialized agents (e.g., Liability Agent, Jurisdiction Agent). Their findings are then aggressively challenged by the Verifier Agent before a final report is generated.
-
-![Multi-Agent Workflow](./assets/workflow-execution.jpg)
-*(Note: Upload your execution image to the assets folder and replace this filename)*
+> **Status:** Architecture and build plan complete. Implementation in progress — see [docs/build-plan.md](docs/build-plan.md) for the phase-by-phase roadmap and current position.
 
 ---
 
-## Project Overview
+## The problem this solves
 
-This project demonstrates how high-risk industries can safely utilize Agentic AI by implementing "Verification Loops." It is built using Python, Autogen (or LangGraph), and Claude AI.
+Contract review tools are good at telling you what a document *says*. The expensive
+paralegal work is proving what a document **doesn't** say — that the cap on damages
+is missing, that there's no governing-law clause, that indemnification runs one way.
 
-The workflow begins when a PDF is dropped into a secure bucket. The Lead Agent normalizes the text and begins executing the firm's compliance SOP. If an agent claims a clause is missing, the Verifier Agent is triggered to re-read the document using a different search strategy to confirm the omission.
+That's also exactly where LLMs fail hardest. A model that skims a 90-page master
+services agreement and reports "no limitation of liability found" is indistinguishable
+from a model that simply didn't look carefully. In legal work, that false negative is
+the difference between a clean deal and an uncapped exposure.
 
----
+This system treats **absence claims as untrusted by default**. Any agent that reports
+a missing clause triggers a Verifier Agent that re-reads the document using a
+deliberately *different* retrieval strategy before the finding is allowed into the report.
 
-## Agent Capabilities
+## Architecture
 
-*   **Multi-Agent Orchestration:** Lead agent assigns tasks to sub-agents.
-*   **Strict Verification Loops:** Cross-examines AI outputs to eliminate false positives/hallucinations.
-*   **Context-Aware Reading:** Understands legal phrasing rather than relying on exact keyword matches.
-*   **Structured Output Generation:** Forces the LLM to output findings in strict JSON format.
-*   **Citation Tool Use:** Agents must use the `cite_source()` tool to provide exact page/paragraph numbers for findings.
-
----
-
-## Audit State & Finding Log
-
-The system maintains a strict audit trail of what the agents found and verified.
-
-| Contract ID | Agent Assigned | Clause Checked | Finding | Verification Status |
-| :--- | :--- | :--- | :--- | :--- |
-| NDA-8812 | Liability_Bot | Cap on Damages | Missing | Verified by Verifier_Bot |
-| LSE-1049 | General_Bot | Jurisdiction | Found (Sec 4.2) | Auto-Approved |
-
----
-
-## Agentic Architecture Overview
-
-```text
+```
 [ Document Ingestion ]
+   PDF -> text blocks anchored to (page, paragraph)
        │
        ▼
 [ Lead Agent: Plan Strategy ]
+   Loads compliance SOP, assigns clause domains to workers
        │
-       ├──► [ Worker Agent 1: Check Liability ] ──► "Found uncapped risk."
-       │
-       ├──► [ Worker Agent 2: Check Termination ] ─► "Clause missing."
+       ├──► [ Worker: Liability ]     ──► "Uncapped risk, §7.1"
+       ├──► [ Worker: Termination ]   ──► "Clause missing"
+       ├──► [ Worker: Jurisdiction ]  ──► "Found, §4.2"
        │
        ▼
 [ Verifier Agent: Challenge Findings ]
-       │
-       ├──► Scans document again for "Termination" synonyms.
+   Re-scans with synonym expansion + cross-model second opinion.
+   Every MISSING claim must survive this to be reported.
        │
        ▼
-[ Output Agent: Generate Strict JSON Report ]
+[ Output Agent: Strict JSON Risk Report ]
+   Pydantic-validated. Every finding carries a page/paragraph citation.
 ```
 
----
+## What makes it more than a RAG wrapper
 
-## Tech Stack
+| Capability | Why it matters |
+| --- | --- |
+| **Hierarchical delegation** | Lead agent scopes each worker to its own clause domain and only its assigned chunks — bounded context, bounded cost. |
+| **Adversarial verification loop** | The verifier is required to use a *different* search strategy than the worker it's checking. Re-asking the same way is not verification. |
+| **Cross-model second opinion** | Claude reasons; Gemini independently checks absence claims. Two models sharing a hallucination is far less likely than one. |
+| **Citation-anchored parsing** | Text blocks keep `(page, paragraph)` anchors through chunking, so `cite_source()` returns a real location a lawyer can open. |
+| **Strict structured output** | Pydantic v2 with `extra="forbid"`. Invalid agent output is retried, never coerced. |
+| **Measured, not asserted** | An eval harness scores precision/recall against golden contracts with known planted omissions. The accuracy claim is a number, not a paragraph. |
+
+## Example report output
+
+*Illustrative — shape of the emitted JSON, not benchmark results.*
+
+| Contract ID | Agent | Clause Checked | Finding | Verification |
+| --- | --- | --- | --- | --- |
+| NDA-8812 | `liability_worker` | Cap on Damages | `MISSING` | Confirmed by Verifier (3 strategies, 0 hits) |
+| LSE-1049 | `jurisdiction_worker` | Governing Law | `PRESENT` — §4.2 | Auto-approved (citation verified) |
+
+## Tech stack
 
 | Component | Technology |
-| :--- | :--- |
-| Agent Framework | Microsoft AutoGen / CrewAI |
-| LLM Reasoning Engine | Anthropic Claude 3/5 Sonnet |
-| Document Parsing | PyPDF2 / LlamaParse |
-| Validation | Pydantic (Strict JSON) |
-| Version Control | GitHub |
+| --- | --- |
+| Agent framework | Microsoft AutoGen |
+| Reasoning engine | Anthropic Claude Sonnet 5 |
+| Verification model | Google Gemini |
+| Document parsing | `pypdf` |
+| Validation | Pydantic v2 |
+| Tooling | `uv`, `pytest`, `ruff` |
+| Built with | Claude Code |
 
----
+## Getting started
 
-## Repository Structure
-
+```bash
+git clone https://github.com/rhain-r/legal-due-diligence-orchestrator.git
+cd legal-due-diligence-orchestrator
+uv sync
+cp .env.example .env    # add your API keys
+uv run pytest -q
 ```
-docs/
-    architecture.md
-    compliance-rules.md
-    setup-guide.md
-agent/
-    orchestrator.py
-    workers.py
-    verifier.py
-assets/
-    workflow-execution.jpg
+
+Run an audit against a sample contract:
+
+```bash
+uv run python -m agents.orchestrator --file tests/fixtures/nda_sample.pdf --rules rules/nda_sop.yaml
 ```
+
+## Documentation
+
+- [docs/build-plan.md](docs/build-plan.md) — phase-by-phase build tutorial
+- [docs/architecture.md](docs/architecture.md) — agent topology and message contracts
+- [docs/compliance-rules.md](docs/compliance-rules.md) — SOP rule format
+
+## License
+
+MIT
