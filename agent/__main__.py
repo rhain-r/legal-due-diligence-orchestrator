@@ -35,6 +35,11 @@ def audit(
         False, "--markdown", "-m", help="Also write a memo-style report."
     ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Log agent activity."),
+    simulate: bool = typer.Option(
+        False,
+        "--simulate",
+        help="Run with deterministic stand-ins instead of models. No API key, no cost.",
+    ),
 ) -> None:
     """Audit a contract against a compliance SOP."""
     logging.basicConfig(
@@ -42,9 +47,34 @@ def audit(
         format="%(levelname)-8s %(name)s: %(message)s",
     )
 
-    from agent.orchestrator import run_audit  # deferred: keeps `ldd rules` fast
+    from agent.orchestrator import Orchestrator, run_audit  # deferred: keeps `ldd rules` fast
 
     settings = get_settings()
+
+    if simulate:
+        # Lets anyone clone the repo and see the pipeline run end to end. The
+        # banner is deliberately loud: these findings are the output of lexical
+        # heuristics, and reading them as model output would be a real mistake.
+        from agent.evals.simulated import SimulatedVerifierClient, SimulatedWorkerClient
+
+        console.print(
+            "[black on yellow] SIMULATED RUN [/] no model calls; agents are "
+            "deterministic stand-ins. Findings are not model output.\n"
+        )
+        rules_list = load_sop(rules).rules
+        orchestrator = Orchestrator(
+            settings,
+            worker_client=SimulatedWorkerClient(rules_list),
+            verifier_client=SimulatedVerifierClient(rules_list),
+        )
+        report = asyncio.run(orchestrator.audit(file, rules))
+        render_terminal(report, console)
+        out_dir = out or settings.report_dir
+        console.print(f"\n[dim]JSON report:[/dim] {write_json(report, out_dir)}")
+        if markdown:
+            console.print(f"[dim]Markdown memo:[/dim] {write_markdown(report, out_dir)}")
+        return
+
     if not settings.anthropic_api_key:
         console.print(
             "[red]ANTHROPIC_API_KEY is not set.[/red] "

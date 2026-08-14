@@ -1,0 +1,43 @@
+# Ground truth. Consulted only by the scorer — no agent ever reads this file.
+contract_id: MSA-BURIED
+source: msa_buried
+title: Master services agreement, protections buried in Miscellaneous
+purpose: >-
+  The retrieval test. Every obligation exists, but they are scattered across a
+  four-page commercial agreement and two of them live in clause 18,
+  "Miscellaneous" — exactly where standard protections end up in practice and
+  exactly where a scoped reviewer never looks.
+
+expectations:
+  - rule_id: NDA-001
+    expected: present
+    location: "§6"
+    note: '"Protected Information", including orally imparted information.'
+  - rule_id: NDA-002
+    expected: present
+    location: "§8"
+    note: Heading is "Permitted Handling", four pages from the definition.
+  - rule_id: NDA-003
+    expected: present
+    location: "§11"
+    note: Five-year term, seven-year survival of clause 7.
+  - rule_id: NDA-004
+    expected: present
+    location: "§12"
+    note: Under "Consequences of Termination", not a return-of-materials heading.
+  - rule_id: NDA-005
+    expected: present
+    location: "§15"
+  - rule_id: NDA-006
+    expected: present
+    location: "§18"
+    note: >-
+      Cap is the first paragraph of Miscellaneous, after a carve-out for fraud
+      and personal injury. Real, effective, and nowhere near a liability heading.
+  - rule_id: NDA-007
+    expected: present
+    location: "§18"
+    note: Second paragraph of Miscellaneous. "damages alone would not be an adequate remedy".
+  - rule_id: NDA-008
+    expected: present
+    location: "§13"

@@ -1,0 +1,35 @@
+# Ground truth. Consulted only by the scorer — no agent ever reads this file.
+contract_id: NDA-SPARSE
+source: nda_sparse
+title: One-way NDA, genuinely incomplete
+purpose: >-
+  The recall test. Four obligations are simply not in the document — no heading,
+  no synonym, no buried sentence. A verifier that overturns any of these is
+  rescuing a gap that is really there, which is worse than the original error.
+
+expectations:
+  - rule_id: NDA-001
+    expected: present
+    location: "§1"
+  - rule_id: NDA-002
+    expected: present
+    location: "§3"
+    note: Includes the compelled-disclosure carve-out.
+  - rule_id: NDA-003
+    expected: present
+    location: "§4"
+  - rule_id: NDA-004
+    expected: absent
+    note: No return or destruction obligation anywhere in the document.
+  - rule_id: NDA-005
+    expected: present
+    location: "§5"
+  - rule_id: NDA-006
+    expected: absent
+    note: No cap, no exclusion of consequential damages. Uncapped exposure.
+  - rule_id: NDA-007
+    expected: absent
+    note: No equitable relief clause.
+  - rule_id: NDA-008
+    expected: absent
+    note: No IP reservation. Silence on licensing.

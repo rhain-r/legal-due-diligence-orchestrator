@@ -1,0 +1,701 @@
+{
+  "generated_at": "2026-08-14T12:44:15.090856+00:00",
+  "mode": "simulated",
+  "worker_strength": "naive",
+  "sop": "nda_sop.yaml",
+  "caveat": "Simulated mode uses deterministic lexical stand-ins, not language models. These figures measure pipeline recovery behaviour, not model accuracy.",
+  "aggregate": {
+    "with_verification": {
+      "tp": 6,
+      "fp_credibility_killer": 7,
+      "fn_liability_killer": 3,
+      "tn": 32,
+      "precision": 0.462,
+      "recall": 0.667,
+      "f1": 0.546
+    },
+    "without_verification": {
+      "tp": 6,
+      "fp_credibility_killer": 21,
+      "fn_liability_killer": 3,
+      "tn": 18,
+      "precision": 0.222,
+      "recall": 0.667,
+      "f1": 0.333
+    },
+    "verifier_lift": {
+      "overturns": 21,
+      "overturns_correct": 21,
+      "overturns_incorrect": 0,
+      "needs_human": 0
+    }
+  },
+  "contracts": [
+    {
+      "contract_id": "MSA-BURIED",
+      "title": "Master services agreement, protections buried in Miscellaneous",
+      "with_verification": {
+        "tp": 0,
+        "fp_credibility_killer": 0,
+        "fn_liability_killer": 0,
+        "tn": 8,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "without_verification": {
+        "tp": 0,
+        "fp_credibility_killer": 6,
+        "fn_liability_killer": 0,
+        "tn": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "verifier_lift": {
+        "overturns": 8,
+        "overturns_correct": 8,
+        "overturns_incorrect": 0,
+        "needs_human": 0
+      },
+      "rules_without_a_finding": [],
+      "detail": [
+        {
+          "rule_id": "NDA-001",
+          "clause": "Definition of Confidential Information",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "\"Protected Information\", including orally imparted information."
+        },
+        {
+          "rule_id": "NDA-002",
+          "clause": "Permitted Disclosures Carve-Out",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "Heading is \"Permitted Handling\", four pages from the definition."
+        },
+        {
+          "rule_id": "NDA-003",
+          "clause": "Term and Survival",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "Five-year term, seven-year survival of clause 7."
+        },
+        {
+          "rule_id": "NDA-004",
+          "clause": "Return or Destruction of Materials",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "Under \"Consequences of Termination\", not a return-of-materials heading."
+        },
+        {
+          "rule_id": "NDA-005",
+          "clause": "Governing Law and Jurisdiction",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-006",
+          "clause": "Cap on Damages",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "Cap is the first paragraph of Miscellaneous, after a carve-out for fraud and personal injury. Real, effective, and nowhere near a liability heading."
+        },
+        {
+          "rule_id": "NDA-007",
+          "clause": "Injunctive Relief",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "Second paragraph of Miscellaneous. \"damages alone would not be an adequate remedy\"."
+        },
+        {
+          "rule_id": "NDA-008",
+          "clause": "No License Granted",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        }
+      ]
+    },
+    {
+      "contract_id": "NDA-ODDLY-WORDED",
+      "title": "Confidentiality undertaking, English drafting conventions",
+      "with_verification": {
+        "tp": 0,
+        "fp_credibility_killer": 7,
+        "fn_liability_killer": 0,
+        "tn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "without_verification": {
+        "tp": 0,
+        "fp_credibility_killer": 8,
+        "fn_liability_killer": 0,
+        "tn": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "verifier_lift": {
+        "overturns": 1,
+        "overturns_correct": 1,
+        "overturns_incorrect": 0,
+        "needs_human": 0
+      },
+      "rules_without_a_finding": [],
+      "detail": [
+        {
+          "rule_id": "NDA-001",
+          "clause": "Definition of Confidential Information",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "FALSE_POSITIVE",
+          "overturned": false,
+          "note": "\"Protected Material\" \u2014 never called Confidential Information."
+        },
+        {
+          "rule_id": "NDA-002",
+          "clause": "Permitted Disclosures Carve-Out",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "FALSE_POSITIVE",
+          "overturned": false,
+          "note": "\"do not bite on material which has entered the public domain\"."
+        },
+        {
+          "rule_id": "NDA-003",
+          "clause": "Term and Survival",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "FALSE_POSITIVE",
+          "overturned": false,
+          "note": "36 months, obligations continue a further 60. Never says \"survive\"."
+        },
+        {
+          "rule_id": "NDA-004",
+          "clause": "Return or Destruction of Materials",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "FALSE_POSITIVE",
+          "overturned": false,
+          "note": "\"deliver up or destroy\" \u2014 never says \"return\"."
+        },
+        {
+          "rule_id": "NDA-005",
+          "clause": "Governing Law and Jurisdiction",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "FALSE_POSITIVE",
+          "overturned": false,
+          "note": "\"Applicable Regime\" heading; England and Wales."
+        },
+        {
+          "rule_id": "NDA-006",
+          "clause": "Cap on Damages",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "Cap buried in General Provisions as \"aggregate obligation ... shall not exceed\". Contains none of \"cap\", \"damages\", or \"limitation of liability\"."
+        },
+        {
+          "rule_id": "NDA-007",
+          "clause": "Injunctive Relief",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "FALSE_POSITIVE",
+          "overturned": false,
+          "note": "\"harm not capable of adequate compensation in money\" plus \"apply to the court for restraint\". Never says injunction or irreparable."
+        },
+        {
+          "rule_id": "NDA-008",
+          "clause": "No License Granted",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "FALSE_POSITIVE",
+          "overturned": false,
+          "note": "\"Reservation of Rights\" \u2014 nothing \"operates to confer any interest\"."
+        }
+      ]
+    },
+    {
+      "contract_id": "NDA-SCOPED-OUT",
+      "title": "Conventional headings, obligations written out of existence",
+      "with_verification": {
+        "tp": 1,
+        "fp_credibility_killer": 0,
+        "fn_liability_killer": 1,
+        "tn": 6,
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.667
+      },
+      "without_verification": {
+        "tp": 1,
+        "fp_credibility_killer": 1,
+        "fn_liability_killer": 1,
+        "tn": 5,
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "verifier_lift": {
+        "overturns": 2,
+        "overturns_correct": 2,
+        "overturns_incorrect": 0,
+        "needs_human": 0
+      },
+      "rules_without_a_finding": [],
+      "detail": [
+        {
+          "rule_id": "NDA-001",
+          "clause": "Definition of Confidential Information",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-002",
+          "clause": "Permitted Disclosures Carve-Out",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-003",
+          "clause": "Term and Survival",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-004",
+          "clause": "Return or Destruction of Materials",
+          "expected": "absent",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "FALSE_NEGATIVE",
+          "overturned": false,
+          "note": "Heading reads \"Return of Materials\". Body grants the receiving party the right to retain everything and states it has NO obligation to return or destroy. The obligation does not exist."
+        },
+        {
+          "rule_id": "NDA-005",
+          "clause": "Governing Law and Jurisdiction",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-006",
+          "clause": "Cap on Damages",
+          "expected": "absent",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "correct_gap",
+          "overturned": false,
+          "note": "Heading reads \"Limitation of Liability\". Body says nothing shall limit, exclude, or cap liability and each party remains fully liable. This is the opposite of a cap \u2014 uncapped exposure behind a reassuring heading."
+        },
+        {
+          "rule_id": "NDA-007",
+          "clause": "Injunctive Relief",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-008",
+          "clause": "No License Granted",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": null
+        }
+      ]
+    },
+    {
+      "contract_id": "NDA-SPARSE",
+      "title": "One-way NDA, genuinely incomplete",
+      "with_verification": {
+        "tp": 4,
+        "fp_credibility_killer": 0,
+        "fn_liability_killer": 0,
+        "tn": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "without_verification": {
+        "tp": 4,
+        "fp_credibility_killer": 2,
+        "fn_liability_killer": 0,
+        "tn": 2,
+        "precision": 0.667,
+        "recall": 1.0,
+        "f1": 0.8
+      },
+      "verifier_lift": {
+        "overturns": 4,
+        "overturns_correct": 4,
+        "overturns_incorrect": 0,
+        "needs_human": 0
+      },
+      "rules_without_a_finding": [],
+      "detail": [
+        {
+          "rule_id": "NDA-001",
+          "clause": "Definition of Confidential Information",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-002",
+          "clause": "Permitted Disclosures Carve-Out",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "Includes the compelled-disclosure carve-out."
+        },
+        {
+          "rule_id": "NDA-003",
+          "clause": "Term and Survival",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-004",
+          "clause": "Return or Destruction of Materials",
+          "expected": "absent",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "correct_gap",
+          "overturned": false,
+          "note": "No return or destruction obligation anywhere in the document."
+        },
+        {
+          "rule_id": "NDA-005",
+          "clause": "Governing Law and Jurisdiction",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-006",
+          "clause": "Cap on Damages",
+          "expected": "absent",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "correct_gap",
+          "overturned": false,
+          "note": "No cap, no exclusion of consequential damages. Uncapped exposure."
+        },
+        {
+          "rule_id": "NDA-007",
+          "clause": "Injunctive Relief",
+          "expected": "absent",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "correct_gap",
+          "overturned": false,
+          "note": "No equitable relief clause."
+        },
+        {
+          "rule_id": "NDA-008",
+          "clause": "No License Granted",
+          "expected": "absent",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "correct_gap",
+          "overturned": false,
+          "note": "No IP reservation. Silence on licensing."
+        }
+      ]
+    },
+    {
+      "contract_id": "NDA-STANDARD",
+      "title": "Plainly worded mutual NDA",
+      "with_verification": {
+        "tp": 0,
+        "fp_credibility_killer": 0,
+        "fn_liability_killer": 0,
+        "tn": 8,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "without_verification": {
+        "tp": 0,
+        "fp_credibility_killer": 2,
+        "fn_liability_killer": 0,
+        "tn": 6,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "verifier_lift": {
+        "overturns": 2,
+        "overturns_correct": 2,
+        "overturns_incorrect": 0,
+        "needs_human": 0
+      },
+      "rules_without_a_finding": [],
+      "detail": [
+        {
+          "rule_id": "NDA-001",
+          "clause": "Definition of Confidential Information",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": "Covers written, oral, electronic, and inspection."
+        },
+        {
+          "rule_id": "NDA-002",
+          "clause": "Permitted Disclosures Carve-Out",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "All four standard carve-outs plus compelled disclosure."
+        },
+        {
+          "rule_id": "NDA-003",
+          "clause": "Term and Survival",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": "Three-year term, five-year survival."
+        },
+        {
+          "rule_id": "NDA-004",
+          "clause": "Return or Destruction of Materials",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": "Return or destroy, with written certification."
+        },
+        {
+          "rule_id": "NDA-005",
+          "clause": "Governing Law and Jurisdiction",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": "New York law, exclusive jurisdiction."
+        },
+        {
+          "rule_id": "NDA-006",
+          "clause": "Cap on Damages",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": "Aggregate cap at 12 months' fees, consequential damages excluded."
+        },
+        {
+          "rule_id": "NDA-007",
+          "clause": "Injunctive Relief",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": "Irreparable harm acknowledged, injunctive relief without bond."
+        },
+        {
+          "rule_id": "NDA-008",
+          "clause": "No License Granted",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": "No licence by implication or estoppel."
+        }
+      ]
+    },
+    {
+      "contract_id": "NDA-SYNONYM-TRAP",
+      "title": "Topic discussed everywhere, obligation created nowhere",
+      "with_verification": {
+        "tp": 1,
+        "fp_credibility_killer": 0,
+        "fn_liability_killer": 2,
+        "tn": 5,
+        "precision": 1.0,
+        "recall": 0.333,
+        "f1": 0.5
+      },
+      "without_verification": {
+        "tp": 1,
+        "fp_credibility_killer": 2,
+        "fn_liability_killer": 2,
+        "tn": 3,
+        "precision": 0.333,
+        "recall": 0.333,
+        "f1": 0.333
+      },
+      "verifier_lift": {
+        "overturns": 4,
+        "overturns_correct": 4,
+        "overturns_incorrect": 0,
+        "needs_human": 0
+      },
+      "rules_without_a_finding": [],
+      "detail": [
+        {
+          "rule_id": "NDA-001",
+          "clause": "Definition of Confidential Information",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-002",
+          "clause": "Permitted Disclosures Carve-Out",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-003",
+          "clause": "Term and Survival",
+          "expected": "present",
+          "worker_status": "missing",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-004",
+          "clause": "Return or Destruction of Materials",
+          "expected": "absent",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "FALSE_NEGATIVE",
+          "overturned": false,
+          "note": "Heading \"Return of Materials\". Body: the parties \"acknowledge the importance of sound information hygiene practices\". No duty is created."
+        },
+        {
+          "rule_id": "NDA-005",
+          "clause": "Governing Law and Jurisdiction",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": true,
+          "note": null
+        },
+        {
+          "rule_id": "NDA-006",
+          "clause": "Cap on Damages",
+          "expected": "absent",
+          "worker_status": "missing",
+          "final_status": "missing",
+          "outcome": "correct_gap",
+          "overturned": false,
+          "note": "No cap anywhere. Not mentioned even in the recitals."
+        },
+        {
+          "rule_id": "NDA-007",
+          "clause": "Injunctive Relief",
+          "expected": "absent",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "FALSE_NEGATIVE",
+          "overturned": false,
+          "note": "Heading \"Remedies\". Body records only that injunctive relief \"was considered during negotiation\". Considering a remedy is not granting one."
+        },
+        {
+          "rule_id": "NDA-008",
+          "clause": "No License Granted",
+          "expected": "present",
+          "worker_status": "present",
+          "final_status": "present",
+          "outcome": "correct_clean",
+          "overturned": false,
+          "note": null
+        }
+      ]
+    }
+  ]
+}

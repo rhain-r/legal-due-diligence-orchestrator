@@ -33,10 +33,17 @@ to prevent. Design every decision against that.
 
 ## Repository shape — keep it this way
 
-The root has exactly four subdirectories: `.claude/`, `agent/`, `assets/`, `docs/`,
-plus `README.md`, `LICENSE`, `.gitignore`, `CLAUDE.md`, `pyproject.toml`. **Do not add
-a fifth top-level directory** without asking — this constraint is deliberate. New
-Python code goes under `agent/`, including tests and evals.
+Four source subdirectories: `.claude/`, `agent/`, `assets/`, `docs/`. **Do not add a
+fifth** without asking — this constraint is deliberate. All new Python goes under
+`agent/`, including tests and evals.
+
+`.github/` is the one exception, and it is platform metadata rather than a source
+directory. Root files are `README.md`, `LICENSE`, `.gitignore`, `CLAUDE.md`,
+`pyproject.toml`, `.python-version`, `uv.lock`.
+
+**`pyproject.toml` must stay at the repository root.** Python packaging requires the
+project root to be the *parent* of the package directory; moving it into `agent/`
+breaks `uv run`, the `ldd` entry point, and pytest discovery.
 
 ```
 agent/
@@ -73,7 +80,7 @@ AutoGen or LangGraph adapter would be a single class. Keep that boundary clean.
 ## Commands
 
 ```bash
-uv sync --extra dev
+uv sync
 uv run pytest
 uv run ruff check . --fix
 uv run ldd inspect agent/tests/fixtures/sample_nda.pdf   # no API key needed
