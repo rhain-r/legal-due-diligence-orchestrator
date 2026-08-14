@@ -1,0 +1,19 @@
+# Normalise text to LF in the repository; check out platform-native.
+* text=auto
+
+# Binary assets must never be line-ending normalised. Without this, git rewrites
+# LF bytes inside a PDF on checkout and the file no longer parses — which a cold
+# clone on Windows will hit and a local working copy never will.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+
+# Keep these LF everywhere so diffs and rendering stay stable.
+*.py text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.svg text eol=lf
