@@ -1,0 +1,128 @@
+# Standard Operating Procedure — Mutual NDA review
+#
+# Each entry is one thing a reviewer must confirm. `synonyms` feed the verifier's
+# expansion search, so list the words the clause actually uses in practice, not
+# just its formal name. See docs/compliance-rules.md for the authoring guide.
+
+name: Mutual NDA Compliance SOP
+version: "1.0"
+description: Baseline review checklist for inbound mutual non-disclosure agreements.
+
+rules:
+  - rule_id: NDA-001
+    clause_name: Definition of Confidential Information
+    domain: confidentiality
+    description: >-
+      The agreement must define Confidential Information, and the definition must
+      cover both written and orally disclosed information.
+    synonyms:
+      - confidential information means
+      - proprietary information
+      - defined term
+    severity: critical
+    required: true
+
+  - rule_id: NDA-002
+    clause_name: Permitted Disclosures Carve-Out
+    domain: confidentiality
+    description: >-
+      Standard exclusions must be present: information already public, independently
+      developed, rightfully received from a third party, or required to be disclosed
+      by law or court order.
+    synonyms:
+      - exclusions
+      - shall not include
+      - publicly available
+      - independently developed
+      - required by law
+    severity: high
+    required: true
+
+  - rule_id: NDA-003
+    clause_name: Term and Survival
+    domain: termination
+    description: >-
+      The agreement must state a definite term, and confidentiality obligations must
+      survive termination for a specified period.
+    synonyms:
+      - term of this agreement
+      - survive
+      - survival
+      - remain in effect
+      - expiration
+    severity: high
+    required: true
+
+  - rule_id: NDA-004
+    clause_name: Return or Destruction of Materials
+    domain: confidentiality
+    description: >-
+      On termination or written request, the receiving party must return or destroy
+      Confidential Information and certify it has done so.
+    synonyms:
+      - return or destroy
+      - destruction of materials
+      - upon written request
+      - certify destruction
+    severity: medium
+    required: true
+
+  - rule_id: NDA-005
+    clause_name: Governing Law and Jurisdiction
+    domain: jurisdiction
+    description: >-
+      A governing law must be specified, together with an agreed venue or forum for
+      disputes.
+    synonyms:
+      - governing law
+      - governed by the laws of
+      - exclusive jurisdiction
+      - venue
+      - choice of law
+    severity: high
+    required: true
+
+  - rule_id: NDA-006
+    clause_name: Cap on Damages
+    domain: liability
+    description: >-
+      Liability must be limited by an aggregate cap, and consequential and indirect
+      damages must be excluded.
+    synonyms:
+      - limitation of liability
+      - aggregate liability
+      - shall not exceed
+      - in no event
+      - consequential damages
+      - indirect damages
+    severity: critical
+    required: true
+
+  - rule_id: NDA-007
+    clause_name: Injunctive Relief
+    domain: liability
+    description: >-
+      The agreement should acknowledge that breach causes irreparable harm and that
+      equitable relief is available without posting a bond.
+    synonyms:
+      - injunctive relief
+      - irreparable harm
+      - equitable relief
+      - specific performance
+      - without posting bond
+    severity: medium
+    required: true
+
+  - rule_id: NDA-008
+    clause_name: No License Granted
+    domain: confidentiality
+    description: >-
+      The agreement must state that no licence or ownership right in intellectual
+      property is granted by disclosure.
+    synonyms:
+      - no license
+      - no rights are granted
+      - retains all right title and interest
+      - intellectual property
+    severity: medium
+    required: false

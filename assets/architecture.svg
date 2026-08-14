@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 700" width="940" height="700" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title>Legal Due Diligence Orchestrator — agent architecture</title>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c2410c"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#15803d"/>
+    </marker>
+  </defs>
+
+  <rect width="940" height="700" fill="#ffffff"/>
+
+  <!-- Header -->
+  <text x="34" y="44" font-size="20" font-weight="700" fill="#0f172a">Legal Due Diligence Orchestrator</text>
+  <text x="34" y="66" font-size="13" fill="#64748b">Hierarchical agents with an adversarial verification loop</text>
+
+  <!-- Provider legend -->
+  <rect x="676" y="26" width="230" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="690" y="40" width="11" height="11" rx="3" fill="#4f46e5"/>
+  <text x="708" y="50" font-size="12" fill="#334155">Claude — planning &amp; reading</text>
+  <rect x="690" y="58" width="11" height="11" rx="3" fill="#c2410c"/>
+  <text x="708" y="68" font-size="12" fill="#334155">Gemini — independent check</text>
+
+  <!-- 1. Ingestion -->
+  <rect x="34" y="100" width="330" height="88" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="52" y="126" font-size="14" font-weight="600" fill="#0f172a">1 · Ingestion</text>
+  <text x="52" y="148" font-size="12" fill="#475569">pypdf → paragraphs anchored to (page, ¶, §)</text>
+  <text x="52" y="168" font-size="12" fill="#475569">Deterministic. No model calls, fully unit-tested.</text>
+
+  <path d="M 199 188 L 199 218" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 2. Lead agent -->
+  <rect x="34" y="220" width="330" height="88" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="34" y="220" width="5" height="88" rx="2" fill="#4f46e5"/>
+  <text x="52" y="246" font-size="14" font-weight="600" fill="#0f172a">2 · Lead Agent — plan &amp; delegate</text>
+  <text x="52" y="268" font-size="12" fill="#475569">Loads the SOP, scopes each rule to relevant sections.</text>
+  <text x="52" y="288" font-size="12" fill="#475569">Workers never receive the whole document.</text>
+
+  <!-- fan-out -->
+  <path d="M 199 308 L 199 330 L 120 330 L 120 352" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 199 308 L 199 352" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 199 308 L 199 330 L 278 330 L 278 352" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- 3. Workers -->
+  <rect x="34" y="354" width="330" height="112" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="52" y="378" font-size="14" font-weight="600" fill="#0f172a">3 · Clause Workers — concurrent</text>
+
+  <rect x="52" y="390" width="94" height="30" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="64" y="410" font-size="11.5" fill="#3730a3">Liability</text>
+  <rect x="154" y="390" width="94" height="30" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="166" y="410" font-size="11.5" fill="#3730a3">Termination</text>
+  <rect x="256" y="390" width="94" height="30" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="268" y="410" font-size="11.5" fill="#3730a3">Jurisdiction</text>
+
+  <text x="52" y="440" font-size="12" fill="#475569">Every claim of "present" must quote the contract.</text>
+  <text x="52" y="457" font-size="12" fill="#475569">Quotes are machine-verified by cite_source().</text>
+
+  <path d="M 199 466 L 199 500" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="210" y="488" font-size="11.5" fill="#64748b">findings</text>
+
+  <!-- 4. Verifier -->
+  <rect x="34" y="502" width="330" height="118" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+  <rect x="34" y="502" width="5" height="118" rx="2" fill="#c2410c"/>
+  <text x="52" y="528" font-size="14" font-weight="600" fill="#7c2d12">4 · Verifier — challenge every absence claim</text>
+  <text x="52" y="550" font-size="12" fill="#7c2d12">Goal is to PROVE THE WORKER WRONG, not to agree.</text>
+  <text x="52" y="570" font-size="12" fill="#7c2d12">Ladder: synonym search → section scan → full text.</text>
+  <text x="52" y="590" font-size="12" fill="#7c2d12">Different model. Different retrieval strategy.</text>
+  <text x="52" y="608" font-size="12" font-weight="600" fill="#9a3412">One verifiable hit overturns the finding.</text>
+
+  <!-- loop back arrow -->
+  <path d="M 364 561 L 400 561 L 400 410 L 364 410" stroke="#c2410c" stroke-width="1.5" fill="none" marker-end="url(#arrowAccent)"/>
+  <text x="408" y="486" font-size="11.5" fill="#c2410c">overturned →</text>
+  <text x="408" y="502" font-size="11.5" fill="#c2410c">rewrite as present</text>
+
+  <!-- 5. Output -->
+  <path d="M 364 596 L 520 596 L 520 470" stroke="#15803d" stroke-width="1.5" fill="none" marker-end="url(#arrowGreen)"/>
+  <text x="530" y="560" font-size="11.5" fill="#15803d">survived verification</text>
+
+  <rect x="520" y="354" width="386" height="112" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.5"/>
+  <rect x="520" y="354" width="5" height="112" rx="2" fill="#15803d"/>
+  <text x="540" y="380" font-size="14" font-weight="600" fill="#14532d">5 · Output Agent — strict JSON report</text>
+  <text x="540" y="402" font-size="12" fill="#166534">Pydantic-validated. Every finding carries a citation.</text>
+  <text x="540" y="422" font-size="12" fill="#166534">Risk score computed in Python, not asked of a model.</text>
+  <text x="540" y="442" font-size="12" fill="#166534">Overturned findings retained in the audit trail.</text>
+
+  <!-- Integrity rules panel -->
+  <rect x="520" y="100" width="386" height="208" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="540" y="128" font-size="13" font-weight="700" fill="#0f172a">The integrity rules</text>
+
+  <text x="540" y="156" font-size="12" font-weight="600" fill="#334155">A clause claimed present must be quotable.</text>
+  <text x="540" y="174" font-size="11.5" fill="#64748b">cite_source() rejects text absent from the document.</text>
+
+  <text x="540" y="202" font-size="12" font-weight="600" fill="#334155">A clause claimed absent must show its search.</text>
+  <text x="540" y="220" font-size="11.5" fill="#64748b">Terms tried, sections scanned, blocks examined.</text>
+
+  <text x="540" y="248" font-size="12" font-weight="600" fill="#334155">Re-asking the same way is not verification.</text>
+  <text x="540" y="266" font-size="11.5" fill="#64748b">The verifier must use a strategy the worker did not.</text>
+
+  <text x="540" y="294" font-size="11.5" font-style="italic" fill="#94a3b8">Enforced by Pydantic validators, not by convention.</text>
+
+  <!-- Footer -->
+  <text x="520" y="500" font-size="11.5" fill="#94a3b8">The hard problem is proving a clause is absent —</text>
+  <text x="520" y="518" font-size="11.5" fill="#94a3b8">not summarizing what a contract says.</text>
+</svg>
