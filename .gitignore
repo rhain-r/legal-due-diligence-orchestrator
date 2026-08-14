@@ -1,23 +1,21 @@
 # --- Secrets -----------------------------------------------------------------
 .env
 .env.*
-!.env.example
 *.key
 *.pem
 
-# --- Client documents (NEVER commit real contracts) --------------------------
-data/contracts/**
-data/incoming/**
-!data/**/.gitkeep
+# --- Client documents --------------------------------------------------------
+# Real contracts must never reach the remote. Synthetic fixtures we authored are
+# the only PDFs allowed in this repository.
 *.pdf
-!docs/**/*.pdf
-!tests/fixtures/**/*.pdf
+!agent/tests/fixtures/**/*.pdf
+!agent/evals/golden/**/*.pdf
+data/
 
 # --- Agent run artifacts -----------------------------------------------------
 runs/
 reports/
 *.audit.json
-!tests/fixtures/**/*.audit.json
 
 # --- Python ------------------------------------------------------------------
 __pycache__/
@@ -30,6 +28,7 @@ venv/
 .mypy_cache/
 htmlcov/
 .coverage
+.coverage.*
 
 # --- Editors / OS ------------------------------------------------------------
 .vscode/
@@ -39,5 +38,5 @@ desktop.ini
 .DS_Store
 
 # --- Claude Code -------------------------------------------------------------
-# Shared team config is committed; personal overrides are not.
+# Shared project config is committed; personal overrides are not.
 .claude/settings.local.json

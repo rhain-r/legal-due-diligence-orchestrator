@@ -1,104 +1,202 @@
-# Legal Due Diligence Orchestrator
+<h1 align="center">Legal Due Diligence Orchestrator</h1>
 
-**A multi-agent AI system that audits legal contracts against a firm's compliance SOP — and then argues with itself to make sure it's right.**
+<p align="center">
+  <strong>A multi-agent AI system that audits legal contracts against a firm's compliance SOP — then argues with itself to make sure it's right.</strong>
+</p>
 
-> **Status:** Architecture and build plan complete. Implementation in progress — see [docs/build-plan.md](docs/build-plan.md) for the phase-by-phase roadmap and current position.
+<p align="center">
+  <img alt="Python 3.10–3.13" src="https://img.shields.io/badge/python-3.10--3.13-3776AB?logo=python&logoColor=white">
+  <img alt="Claude" src="https://img.shields.io/badge/reasoning-Claude%20Sonnet-D97757">
+  <img alt="Gemini" src="https://img.shields.io/badge/verification-Gemini-4285F4?logo=google&logoColor=white">
+  <img alt="Pydantic v2" src="https://img.shields.io/badge/validation-Pydantic%20v2-E92063">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-65%20passing-2ea043">
+  <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue">
+</p>
 
 ---
 
-## The problem this solves
+## The problem
 
-Contract review tools are good at telling you what a document *says*. The expensive
-paralegal work is proving what a document **doesn't** say — that the cap on damages
-is missing, that there's no governing-law clause, that indemnification runs one way.
+Contract review tools are good at telling you what a document **says**. The expensive
+paralegal work is proving what a document **doesn't** say — that there's no cap on
+damages, no governing-law clause, no return-of-materials obligation.
 
-That's also exactly where LLMs fail hardest. A model that skims a 90-page master
-services agreement and reports "no limitation of liability found" is indistinguishable
-from a model that simply didn't look carefully. In legal work, that false negative is
-the difference between a clean deal and an uncapped exposure.
+That's also where language models fail hardest, and fail *quietly*. A model that skims
+a 90-page master services agreement and reports *"no limitation of liability found"*
+produces output identical to a model that looked carefully and found nothing. Nothing
+in the response distinguishes diligence from laziness — and in legal work that false
+negative is the difference between a clean deal and uncapped exposure.
 
-This system treats **absence claims as untrusted by default**. Any agent that reports
-a missing clause triggers a Verifier Agent that re-reads the document using a
-deliberately *different* retrieval strategy before the finding is allowed into the report.
+**So this system treats absence claims as untrusted by default.** Any agent that
+reports a missing clause triggers a verifier that re-reads the document with a
+deliberately *different* retrieval strategy, on a *different* model, with the burden
+of proof inverted — before the finding is allowed into the report.
 
 ## Architecture
 
+![Agent architecture](assets/architecture.svg)
+
+<details>
+<summary>Text version</summary>
+
 ```
-[ Document Ingestion ]
-   PDF -> text blocks anchored to (page, paragraph)
-       │
-       ▼
-[ Lead Agent: Plan Strategy ]
-   Loads compliance SOP, assigns clause domains to workers
-       │
-       ├──► [ Worker: Liability ]     ──► "Uncapped risk, §7.1"
-       ├──► [ Worker: Termination ]   ──► "Clause missing"
-       ├──► [ Worker: Jurisdiction ]  ──► "Found, §4.2"
-       │
-       ▼
-[ Verifier Agent: Challenge Findings ]
-   Re-scans with synonym expansion + cross-model second opinion.
-   Every MISSING claim must survive this to be reported.
-       │
-       ▼
-[ Output Agent: Strict JSON Risk Report ]
-   Pydantic-validated. Every finding carries a page/paragraph citation.
+[ Ingestion ]  pypdf → paragraphs anchored to (page, ¶, §)
+      │
+      ▼
+[ Lead Agent ]  loads SOP, scopes each rule to relevant sections
+      │
+      ├──► [ Liability Worker ]     ──► "uncapped risk"
+      ├──► [ Termination Worker ]   ──► "clause missing"
+      ├──► [ Jurisdiction Worker ]  ──► "found, §8"
+      │
+      ▼
+[ Verifier ]  synonym search → section scan → full text
+      │        goal: PROVE THE WORKER WRONG
+      ├──► one verifiable hit ⇒ finding overturned
+      │
+      ▼
+[ Output Agent ]  Pydantic-validated JSON + risk score
 ```
+
+</details>
 
 ## What makes it more than a RAG wrapper
 
 | Capability | Why it matters |
 | --- | --- |
-| **Hierarchical delegation** | Lead agent scopes each worker to its own clause domain and only its assigned chunks — bounded context, bounded cost. |
-| **Adversarial verification loop** | The verifier is required to use a *different* search strategy than the worker it's checking. Re-asking the same way is not verification. |
-| **Cross-model second opinion** | Claude reasons; Gemini independently checks absence claims. Two models sharing a hallucination is far less likely than one. |
-| **Citation-anchored parsing** | Text blocks keep `(page, paragraph)` anchors through chunking, so `cite_source()` returns a real location a lawyer can open. |
-| **Strict structured output** | Pydantic v2 with `extra="forbid"`. Invalid agent output is retried, never coerced. |
-| **Measured, not asserted** | An eval harness scores precision/recall against golden contracts with known planted omissions. The accuracy claim is a number, not a paragraph. |
+| **Adversarial verification** | The verifier must use a strategy the worker didn't, and is prompted to *find* the clause rather than confirm its absence. Re-asking the same way is agreement, not verification. |
+| **Cross-model second opinion** | Workers reason on Claude; the verifier runs on Gemini. Two independently trained models converging on "absent" is real evidence. One model agreeing with itself is not. |
+| **Citation gate** | `cite_source()` verifies a quote appears in the source before minting a `Citation`. An agent can hallucinate a quote; it cannot hallucinate a citation. |
+| **Schema-enforced integrity** | A `MISSING` finding carrying a document quote raises a `ValidationError` — the claim is self-contradictory. `extra="forbid"` turns invented fields into errors. |
+| **Anchored parsing** | `(page, ¶, §)` survives parsing and chunking, so citations point at somewhere a lawyer can actually open. |
+| **Three verdicts, not two** | `needs_human` is a first-class outcome. A flagged ambiguity costs a five-minute review; a wrong "confirmed" costs a missed liability. |
+| **Deterministic scoring** | Risk score is a Python function of severity and status — auditable, explainable, unit-tested. Not a number an LLM felt like emitting. |
 
-## Example report output
-
-*Illustrative — shape of the emitted JSON, not benchmark results.*
-
-| Contract ID | Agent | Clause Checked | Finding | Verification |
-| --- | --- | --- | --- | --- |
-| NDA-8812 | `liability_worker` | Cap on Damages | `MISSING` | Confirmed by Verifier (3 strategies, 0 hits) |
-| LSE-1049 | `jurisdiction_worker` | Governing Law | `PRESENT` — §4.2 | Auto-approved (citation verified) |
-
-## Tech stack
-
-| Component | Technology |
-| --- | --- |
-| Agent framework | Microsoft AutoGen |
-| Reasoning engine | Anthropic Claude Sonnet 5 |
-| Verification model | Google Gemini |
-| Document parsing | `pypdf` |
-| Validation | Pydantic v2 |
-| Tooling | `uv`, `pytest`, `ruff` |
-| Built with | Claude Code |
-
-## Getting started
+## Quick start
 
 ```bash
 git clone https://github.com/rhain-r/legal-due-diligence-orchestrator.git
-cd legal-due-diligence-orchestrator
-uv sync
-cp .env.example .env    # add your API keys
-uv run pytest -q
 ```
-
-Run an audit against a sample contract:
 
 ```bash
-uv run python -m agents.orchestrator --file tests/fixtures/nda_sample.pdf --rules rules/nda_sop.yaml
+cd legal-due-diligence-orchestrator && uv sync --extra dev
 ```
+
+`uv` fetches its own CPython 3.12 — your system Python is untouched.
+
+**Try it with no API key.** `inspect` parses a contract and shows its structure:
+
+```bash
+uv run ldd inspect agent/tests/fixtures/sample_nda.pdf
+```
+
+```
+sample_nda.pdf — 3 pages, 63 blocks, 9 sections, 1 chunks
+┌───────┬───────┬──────────────────┬───────┐
+│ Chunk │ Pages │ Sections         │ Chars │
+├───────┼───────┼──────────────────┼───────┤
+│ c000  │ 1–3   │ 1, 2, 3, 4, 5, 6 │  3968 │
+└───────┴───────┴──────────────────┴───────┘
+```
+
+Then add keys to `.env` (see [setup guide](docs/setup-guide.md)) and run a full audit:
+
+```bash
+uv run ldd audit agent/tests/fixtures/sample_nda.pdf --markdown --verbose
+```
+
+The bundled synthetic NDA is built to demonstrate the loop: its **cap on damages is
+present but buried in "General Provisions"** and worded without the words *cap*,
+*damages*, or *limitation of liability*. Expect a worker to report it missing and the
+verifier to overturn that. Return-of-materials and injunctive relief are genuinely
+absent and should survive as confirmed gaps.
+
+## Repository layout
+
+```
+agent/
+├── schemas.py         message contracts — the architecture lives here
+├── config.py          models, keys, limits; nothing hardcoded elsewhere
+├── llm.py             provider adapters + structured output with retry
+├── orchestrator.py    plan → dispatch → route → trace
+├── workers.py         one clause domain each
+├── verifier.py        the adversarial loop
+├── reporter.py        scoring, JSON, terminal, markdown
+├── sop.py             YAML rule loading
+├── ingestion/         PDF → anchored blocks → chunks   (no LLM calls)
+├── tools/             cite_source(), retrieval strategies (no LLM calls)
+├── prompts/           system prompts, on disk so they show up in diffs
+├── rules/             compliance SOPs as YAML
+└── tests/             65 tests, all against stubbed clients
+assets/                architecture diagram
+docs/                  architecture · compliance-rules · setup-guide · build-plan
+```
+
+Roughly two-thirds of the system is deterministic Python. Everything that *can* be a
+tested function instead of a prompt, is one — which is why the whole suite runs in
+under a second with no API key and no cost.
+
+## Testing
+
+```bash
+uv run pytest
+```
+
+```
+65 passed in 0.91s
+```
+
+The suite runs entirely against `StubClient`. Tests target rejection paths, not just
+happy paths: fabricated quotes, `MISSING` findings carrying citations, verifier
+overturns it can't quote, and verifier crashes that must not read as agreement.
+
+The load-bearing test is `test_verifier_overturns_a_false_absence_claim` — a contract
+where the clause is present but shares no keywords with its own name. If that test
+stops passing, the architecture no longer earns its cost.
+
+## Tech stack
+
+| Component | Choice | Why |
+| --- | --- | --- |
+| Reasoning | Anthropic Claude Sonnet | Planner and clause workers |
+| Verification | Google Gemini | Different lab, so the cross-check is real |
+| Parsing | `pypdf` | Actively maintained, unlike PyPDF2 |
+| Validation | Pydantic v2 | `extra="forbid"` everywhere |
+| Orchestration | Purpose-built `asyncio` | See below |
+| Tooling | `uv`, `pytest`, `ruff`, `typer`, `rich` | |
+| Built with | Claude Code | See [build plan](docs/build-plan.md) |
+
+**On agent frameworks.** The orchestration here is purpose-built rather than delegated
+to AutoGen or LangGraph. `agent/llm.py` defines a one-method `ModelClient` protocol,
+so an adapter for any framework is a single class — nothing in schemas, ingestion,
+tools, or reporting moves. The delegation logic is ~40 lines of `asyncio.gather` under
+a semaphore; a framework wouldn't have made that shorter, and would have made the
+verification ladder harder to express. It also keeps the test suite free and offline.
+
+## Status and honest limitations
+
+**Working:** ingestion, tools, workers, orchestrator, verification loop, reporting,
+CLI. 65 tests passing, `ruff` clean.
+
+**Not yet built:** the eval harness ([build plan](docs/build-plan.md) Phase 9). Until
+it exists, the accuracy argument in this README is *architectural*, not measured —
+there are no benchmark numbers here and I'm not going to imply otherwise.
+
+Other known limits, in full: [architecture.md § Known limitations](docs/architecture.md#known-limitations).
+Scanned PDFs need OCR upstream. Chunk assignment is lexical rather than embedding-based.
+Cross-model verification degrades to a same-model check if only one API key is
+configured. Two models with overlapping training data can still share a blind spot —
+which is why `needs_human` exists.
 
 ## Documentation
 
-- [docs/build-plan.md](docs/build-plan.md) — phase-by-phase build tutorial
-- [docs/architecture.md](docs/architecture.md) — agent topology and message contracts
-- [docs/compliance-rules.md](docs/compliance-rules.md) — SOP rule format
+| Doc | Contents |
+| --- | --- |
+| [architecture.md](docs/architecture.md) | Component map, audit sequence, verification design, limitations |
+| [compliance-rules.md](docs/compliance-rules.md) | YAML rule format and how to author good synonyms |
+| [setup-guide.md](docs/setup-guide.md) | Install, configure, run, troubleshoot |
+| [build-plan.md](docs/build-plan.md) | Phase-by-phase build log and remaining work |
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
