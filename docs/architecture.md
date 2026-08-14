@@ -135,9 +135,19 @@ Stated plainly, because a portfolio repo that claims no weaknesses is not credib
   with a whole-document fallback. An embedding-based planner would scope tighter.
 - **Paragraph granularity depends on the PDF.** Documents without blank-line
   separation degrade to line-level blocks. Citations stay correct but get finer.
-- **No accuracy numbers yet.** The eval harness described in
-  [build-plan.md](build-plan.md) Phase 9 is not built. Until it is, the accuracy
-  claim in this repo is an architectural argument, not a measurement.
+- **The verifier only challenges absence claims.** This is the largest gap, and the
+  eval quantifies it: every false negative in the golden set is a false-*presence*
+  claim that was never challenged. A worker that confidently matches a reassuring
+  heading — over a clause negating itself in its own body — is never contradicted.
+  Symmetric verification of presence claims is the highest-value next change.
+- **Never run against real models.** The system is wired for Claude and Gemini and
+  will run against them, but every published number comes from the deterministic
+  stand-ins in `agent/evals/simulated.py`. Those measure pipeline recovery, not model
+  accuracy, and the repo makes no claim about the latter.
+- **Verifier lift depends on SOP quality, not just architecture.** Against a
+  synonym-aware worker the verifier eliminated zero false absence claims on the
+  golden set, because good synonym lists had already caught them. The loop is a
+  safety net for what the SOP misses, not a substitute for authoring it well.
 - **Cross-model verification requires two API keys.** With only one provider
   configured the system still runs, but property 2 above degrades to a same-model
   check.

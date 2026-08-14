@@ -1,0 +1,42 @@
+# Ground truth. Consulted only by the scorer — no agent ever reads this file.
+contract_id: NDA-SYNONYM-TRAP
+source: nda_synonym_trap
+title: Topic discussed everywhere, obligation created nowhere
+purpose: >-
+  The keyword trap, aimed squarely at the verifier. The recitals name return of
+  materials and injunctive relief; two sections carry those exact headings. None
+  of it creates an obligation. A verifier that overturns on keyword proximity
+  fails here, which is the point — synonym retrieval must find the clause, and
+  then something must still judge whether the language is operative.
+
+expectations:
+  - rule_id: NDA-001
+    expected: present
+    location: "§1"
+  - rule_id: NDA-002
+    expected: present
+    location: "§3"
+  - rule_id: NDA-003
+    expected: present
+    location: "§4"
+  - rule_id: NDA-004
+    expected: absent
+    location: "§5"
+    note: >-
+      Heading "Return of Materials". Body: the parties "acknowledge the
+      importance of sound information hygiene practices". No duty is created.
+  - rule_id: NDA-005
+    expected: present
+    location: "§8"
+  - rule_id: NDA-006
+    expected: absent
+    note: No cap anywhere. Not mentioned even in the recitals.
+  - rule_id: NDA-007
+    expected: absent
+    location: "§6"
+    note: >-
+      Heading "Remedies". Body records only that injunctive relief "was
+      considered during negotiation". Considering a remedy is not granting one.
+  - rule_id: NDA-008
+    expected: present
+    location: "§7"

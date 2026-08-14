@@ -19,7 +19,7 @@ cd legal-due-diligence-orchestrator
 ```
 
 ```bash
-uv sync --extra dev
+uv sync
 ```
 
 `uv` reads `.python-version`, fetches CPython 3.12 if it isn't present, and creates
@@ -147,7 +147,7 @@ A uv symlink issue on Windows. The interpreter still downloads correctly; pass i
 explicitly:
 
 ```bash
-uv sync --extra dev --python "$env:APPDATA\uv\python\cpython-3.12.13-windows-x86_64-none\python.exe"
+uv sync --python "$env:APPDATA\uv\python\cpython-3.12.13-windows-x86_64-none\python.exe"
 ```
 
 **`No extractable text in <file>.pdf`**

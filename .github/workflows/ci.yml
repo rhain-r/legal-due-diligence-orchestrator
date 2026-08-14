@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Lower and upper bound of requires-python. If it builds on both, the
+        # range in pyproject.toml is honest.
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --python ${{ matrix.python-version }}
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Test
+        run: uv run pytest
+
+      # The eval is fully deterministic — no API keys, no network — so it runs
+      # as a behavioural regression check, not just a smoke test. If a prompt or
+      # retrieval change silently degrades recovery, this is where it surfaces.
+      - name: Evaluate against golden contracts
+        run: uv run python -m agent.evals.run
+
+      - name: Verify the no-key path still works
+        run: |
+          uv run ldd rules
+          uv run ldd inspect agent/tests/fixtures/sample_nda.pdf

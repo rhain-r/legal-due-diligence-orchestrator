@@ -23,6 +23,11 @@ _SECTION_PATTERNS = [
     re.compile(r"^\s*SECTION\s+(?P<ref>\d+(?:\.\d+)*)\s*[.\-–—:]?\s*(?P<title>[^\n]{0,80})$", re.I),
 ]
 
+#: Headings are short. Prose that happens to start with a number is not.
+#: Without this bound, "14 March 2025 (the Effective Date) by and between..."
+#: parses as section 14 and poisons every citation that follows it.
+_MAX_HEADING_CHARS = 60
+
 # A line that is only a page number, or "Page 4 of 27".
 _PAGE_NUMBER_ONLY = re.compile(r"^\s*(?:page\s+)?\d+\s*(?:of\s+\d+)?\s*$", re.I)
 
@@ -64,18 +69,56 @@ def _clean_page(raw: str, boilerplate: set[str]) -> str:
     return "\n".join(kept)
 
 
+def _looks_like_heading(line: str) -> bool:
+    stripped = line.strip()
+    if not stripped or len(stripped) > _MAX_HEADING_CHARS:
+        return False
+    if any(p.match(stripped) for p in _SECTION_PATTERNS):
+        return True
+    # Short all-caps lines are headings ("RECITALS", "NOW THEREFORE").
+    letters = [c for c in stripped if c.isalpha()]
+    return bool(letters) and all(c.isupper() for c in letters) and len(stripped) < 50
+
+
+def _reflow_lines(lines: list[str]) -> list[str]:
+    """Rebuild paragraphs from a page that extracted as bare lines.
+
+    Many PDFs carry no blank lines through text extraction, so splitting on them
+    yields one block per *line* — which severs sentences and makes a clause look
+    absent to both halves. Join lines until one ends in sentence-final
+    punctuation, breaking at anything that looks like a heading.
+    """
+    paragraphs: list[str] = []
+    buffer: list[str] = []
+
+    def flush() -> None:
+        if buffer:
+            paragraphs.append(" ".join(buffer))
+            buffer.clear()
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            flush()
+            continue
+        if _looks_like_heading(stripped):
+            flush()
+            paragraphs.append(stripped)
+            continue
+        buffer.append(stripped)
+        if stripped.endswith((".", ";", ":", "?", "!")):
+            flush()
+
+    flush()
+    return paragraphs
+
+
 def _split_paragraphs(page_text: str) -> list[str]:
-    """Split on blank lines, falling back to single newlines for dense layouts."""
+    """Split into paragraphs, reflowing when blank lines did not survive extraction."""
     parts = [p.strip() for p in re.split(r"\n\s*\n", page_text) if p.strip()]
     if len(parts) <= 1 and page_text.count("\n") > 4:
-        parts = [p.strip() for p in page_text.splitlines() if p.strip()]
+        parts = _reflow_lines(page_text.splitlines())
     return [re.sub(r"[ \t]+", " ", p.replace("\n", " ")).strip() for p in parts]
-
-
-#: Headings are short. Prose that happens to start with a number is not.
-#: Without this bound, "14 March 2025 (the Effective Date) by and between..."
-#: parses as section 14 and poisons every citation that follows it.
-_MAX_HEADING_CHARS = 60
 
 
 def _match_section(paragraph: str) -> str | None:

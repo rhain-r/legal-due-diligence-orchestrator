@@ -19,7 +19,9 @@ dependencies = [
     "rich>=13.7",
 ]
 
-[project.optional-dependencies]
+# PEP 735 group rather than an optional-dependencies extra: uv installs this by
+# default, so `uv run` never silently drops the test and eval tooling.
+[dependency-groups]
 dev = [
     "pytest>=8.2",
     "pytest-cov>=5.0",

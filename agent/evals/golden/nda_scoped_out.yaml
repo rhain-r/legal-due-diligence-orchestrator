@@ -1,0 +1,43 @@
+# Ground truth. Consulted only by the scorer — no agent ever reads this file.
+contract_id: NDA-SCOPED-OUT
+source: nda_scoped_out
+title: Conventional headings, obligations written out of existence
+purpose: >-
+  The false-negative trap, and the liability killer. Two clauses carry exactly
+  the heading a reviewer looks for, then negate themselves in the body. A
+  heading-matching reviewer scores this document clean; a lawyer would not sign
+  it. These are the cases where being wrong is most expensive.
+
+expectations:
+  - rule_id: NDA-001
+    expected: present
+    location: "§1"
+  - rule_id: NDA-002
+    expected: present
+    location: "§3"
+  - rule_id: NDA-003
+    expected: present
+    location: "§4"
+  - rule_id: NDA-004
+    expected: absent
+    location: "§5"
+    note: >-
+      Heading reads "Return of Materials". Body grants the receiving party the
+      right to retain everything and states it has NO obligation to return or
+      destroy. The obligation does not exist.
+  - rule_id: NDA-005
+    expected: present
+    location: "§7"
+  - rule_id: NDA-006
+    expected: absent
+    location: "§8"
+    note: >-
+      Heading reads "Limitation of Liability". Body says nothing shall limit,
+      exclude, or cap liability and each party remains fully liable. This is the
+      opposite of a cap — uncapped exposure behind a reassuring heading.
+  - rule_id: NDA-007
+    expected: present
+    location: "§9"
+  - rule_id: NDA-008
+    expected: present
+    location: "§6"

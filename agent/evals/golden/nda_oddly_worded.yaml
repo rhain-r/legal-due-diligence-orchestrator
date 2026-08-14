@@ -1,0 +1,47 @@
+# Ground truth. Consulted only by the scorer — no agent ever reads this file.
+contract_id: NDA-ODDLY-WORDED
+source: nda_oddly_worded
+title: Confidentiality undertaking, English drafting conventions
+purpose: >-
+  The false-positive trap, and the credibility killer for this product. Every
+  obligation in the SOP is genuinely present, but no operative sentence shares
+  vocabulary with the clause name. A reviewer matching on clause names reports
+  most of this document as non-compliant. Every MISSING claim here is wrong.
+
+expectations:
+  - rule_id: NDA-001
+    expected: present
+    location: "§1"
+    note: '"Protected Material" — never called Confidential Information.'
+  - rule_id: NDA-002
+    expected: present
+    location: "§3"
+    note: '"do not bite on material which has entered the public domain".'
+  - rule_id: NDA-003
+    expected: present
+    location: "§4"
+    note: 36 months, obligations continue a further 60. Never says "survive".
+  - rule_id: NDA-004
+    expected: present
+    location: "§5"
+    note: '"deliver up or destroy" — never says "return".'
+  - rule_id: NDA-005
+    expected: present
+    location: "§7"
+    note: '"Applicable Regime" heading; England and Wales.'
+  - rule_id: NDA-006
+    expected: present
+    location: "§8"
+    note: >-
+      Cap buried in General Provisions as "aggregate obligation ... shall not
+      exceed". Contains none of "cap", "damages", or "limitation of liability".
+  - rule_id: NDA-007
+    expected: present
+    location: "§8"
+    note: >-
+      "harm not capable of adequate compensation in money" plus "apply to the
+      court for restraint". Never says injunction or irreparable.
+  - rule_id: NDA-008
+    expected: present
+    location: "§6"
+    note: '"Reservation of Rights" — nothing "operates to confer any interest".'

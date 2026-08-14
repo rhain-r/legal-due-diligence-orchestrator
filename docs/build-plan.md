@@ -19,10 +19,11 @@ with paste-ready prompts.
 | 6 | Orchestrator | ✅ done |
 | 7 | Verification loop | ✅ done |
 | 8 | Reporting + CLI | ✅ done |
-| 9 | Eval harness | ⬜ open |
-| 10 | Portfolio polish | ⬜ open |
+| 9 | Eval harness | ✅ done |
+| 10 | Portfolio polish | ✅ done |
 
-Current state: **65 tests passing**, `ruff` clean, CLI working end to end.
+Current state: **83 tests passing**, `ruff` clean, CLI working end to end, six golden
+contracts scored in CI on every push.
 
 ---
 
@@ -169,60 +170,44 @@ CLI: `ldd audit`, `ldd rules`, `ldd inspect`. The last two need no API key.
 
 ---
 
-## Phase 9 — Eval harness ⬜
+## Phase 9 — Eval harness
 
-**This is the highest-value remaining work.** Anyone can write "eliminates
-hallucinations" in a README; almost nobody ships numbers. A reviewer who sees an eval
-directory goes straight to it, and if it's honest, everything else gains credibility.
+Six synthetic contracts in `agent/evals/`, each with a YAML answer key. Contract text
+lives in `corpus.py` so it is diffable; PDFs are build artifacts.
 
-It's also the only way to know whether a prompt change helped.
+**The constraint that shaped this phase: no API keys were available.** An eval cannot
+measure model reasoning without models, so it measures what *is* real — the retrieval
+ladder, citation gate, schema enforcement, and verdict routing — using deterministic
+lexical stand-ins in `simulated.py`. Every output labels itself accordingly. Publishing
+stand-in numbers as model accuracy would have been worse than publishing nothing.
 
-### The prompt
+Two guards against self-deception, both worth copying:
 
-```text
-Build the eval harness. Keep everything inside agent/evals/ — the repo has a
-deliberate four-folder root and I don't want a fifth.
+1. **Answer keys are read only by the scorer.** No agent ever sees ground truth,
+   or the eval is circular and measures nothing.
+2. **Two worker strengths are reported, not one.** `--strength naive` matches clause
+   names; `--strength synonym` also matches the SOP's synonyms. Reporting both is what
+   surfaced the most interesting result — verifier lift collapses to zero against a
+   synonym-aware worker, which means the loop is a safety net for a thin SOP rather
+   than an unconditional win.
 
-- agent/evals/golden/: 5-6 synthetic contracts we author, each with a YAML answer
-  key recording which clauses are genuinely present (with locations) and which were
-  deliberately removed. Reuse the generator approach that produced
-  agent/tests/fixtures/sample_nda.pdf. Include adversarial cases: a clause present
-  but oddly worded, a clause that LOOKS present but is scoped out by an exception,
-  and a genuinely absent one.
-- agent/evals/run.py: runs the full pipeline over the golden set with StubClient
-  optionally swapped for real clients. Report precision, recall, and F1 on MISSING
-  claims, plus the two numbers that matter most in this domain, tracked separately:
-    * false positives (claimed missing, actually present) — the credibility killer
-    * false negatives (claimed present, actually missing) — the liability killer
-- Report verifier lift: how many worker findings were overturned, and how many
-  overturns were correct. That number is the entire justification for the
-  architecture — if it's near zero, say so.
-- Write results to agent/evals/results/<timestamp>.json and print a markdown table.
+The stand-in heuristic was expanded once, on principle, after inspecting which legal
+constructions it was missing — then frozen. A heuristic iterated until the scores look
+good measures only the iteration.
 
-Then run it and put the real numbers in README.md, replacing the placeholder note.
-```
+Results: [README § Evaluation](../README.md#evaluation).
 
-**Done when:** you have numbers in the README. Publish them even if imperfect — an
-honest 0.82 recall with a note on the failure mode reads as far more competent than an
-unquantified claim of perfection.
+## Phase 10 — Polish
 
-## Phase 10 — Polish ⬜
-
-### The prompt
-
-```text
-Final polish for a public portfolio repo:
-
-- Record a terminal demo (asciinema or GIF) of a full audit, making sure the verifier
-  overturn is visible. Save to assets/. That moment is the money shot.
-- Update README with real eval numbers from Phase 9.
-- Verify a cold clone works: fresh directory, uv sync, pytest, ldd inspect.
-- Decide on CI. It needs .github/workflows/, which breaks the four-folder root rule —
-  worth it or not is a judgement call, but an untested public repo is a weaker signal
-  than a fifth directory.
-
-Then run /code-review and /security-review over the whole repo.
-```
+- `assets/demo.svg` renders real captured output of the verifier overturning eight
+  findings on `msa_buried`. Reproducible via `ldd audit --simulate`.
+- `--simulate` added to the CLI so anyone can clone and watch the pipeline run with no
+  key and no cost. The banner is loud about what the findings are.
+- CI added at `.github/workflows/ci.yml`, testing Python 3.10 and 3.12, running lint,
+  tests, the eval, and the no-key commands. **This was the one deliberate break from
+  the four-directory rule**, on the judgement that an untested public repo is a weaker
+  signal than a platform-metadata directory. `.github/` is repo config, not source.
+- Cold clone verified: fresh directory, `uv sync`, `pytest`, `ldd inspect`.
 
 ---
 

@@ -1,0 +1,42 @@
+# Ground truth. Consulted only by the scorer — no agent ever reads this file.
+contract_id: NDA-STANDARD
+source: nda_standard
+title: Plainly worded mutual NDA
+purpose: >-
+  Baseline. Every obligation is present under a conventional heading in
+  conventional language. If the pipeline cannot score this correctly, no other
+  result in the suite means anything.
+
+expectations:
+  - rule_id: NDA-001
+    expected: present
+    location: "§1"
+    note: Covers written, oral, electronic, and inspection.
+  - rule_id: NDA-002
+    expected: present
+    location: "§3"
+    note: All four standard carve-outs plus compelled disclosure.
+  - rule_id: NDA-003
+    expected: present
+    location: "§4"
+    note: Three-year term, five-year survival.
+  - rule_id: NDA-004
+    expected: present
+    location: "§5"
+    note: Return or destroy, with written certification.
+  - rule_id: NDA-005
+    expected: present
+    location: "§7"
+    note: New York law, exclusive jurisdiction.
+  - rule_id: NDA-006
+    expected: present
+    location: "§8"
+    note: Aggregate cap at 12 months' fees, consequential damages excluded.
+  - rule_id: NDA-007
+    expected: present
+    location: "§9"
+    note: Irreparable harm acknowledged, injunctive relief without bond.
+  - rule_id: NDA-008
+    expected: present
+    location: "§6"
+    note: No licence by implication or estoppel.

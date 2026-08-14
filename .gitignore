@@ -9,8 +9,11 @@
 # the only PDFs allowed in this repository.
 *.pdf
 !agent/tests/fixtures/**/*.pdf
-!agent/evals/golden/**/*.pdf
 data/
+
+# Golden contracts are rendered from agent/evals/corpus.py on demand. The text
+# is the reviewable source; the PDFs are build artifacts.
+agent/evals/golden/build/
 
 # --- Agent run artifacts -----------------------------------------------------
 runs/
