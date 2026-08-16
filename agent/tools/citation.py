@@ -105,12 +105,19 @@ def cite_from_blocks(blocks: list[TextBlock], quote: str) -> Citation:
     Convenience for agents that know what the document said but not which block
     it was in. Raises CitationError if no block contains the quote.
     """
-    errors: list[str] = []
     for block in blocks:
         try:
             return cite_source(block, quote)
-        except CitationError as exc:
-            errors.append(str(exc))
+        except CitationError:
+            continue
+
+    # Report how close the best block came. The difference between 0.89 (drifted
+    # quote, worth loosening the threshold) and 0.20 (fabricated) is the first
+    # thing anyone debugging the citation gate needs, and it is invisible from
+    # "not found" alone.
+    needle = _normalize(quote)
+    best = max((_best_window_ratio(needle, _normalize(b.text)) for b in blocks), default=0.0)
     raise CitationError(
-        f"Quote not found in any of {len(blocks)} blocks: {quote[:120]!r}"
+        f"Quote not found in any of {len(blocks)} blocks (best similarity "
+        f"{best:.2f}, threshold {FUZZY_THRESHOLD}): {quote[:120]!r}"
     )

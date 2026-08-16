@@ -18,6 +18,8 @@ from agent.schemas import (
     SearchEvidence,
     SearchStrategy,
     Severity,
+    Verdict,
+    VerificationResult,
 )
 from agent.sop import load_sop
 
@@ -115,6 +117,47 @@ def test_overturned_findings_are_retained_in_the_audit_trail() -> None:
     )
     assert report.verifier_lift == 1
     assert "overturned" in render_markdown(report).lower()
+
+
+def test_escalated_findings_are_listed_as_unresolved() -> None:
+    """Derived from verdicts, not from matching prose in the rationale."""
+    finding = _finding(FindingStatus.MISSING, Severity.HIGH, "NDA-004")
+    report = build_report(
+        contract_id="NDA-8812",
+        source_file="nda.pdf",
+        audit_id="aud_1",
+        rules_evaluated=1,
+        findings=[finding],
+        verifications=[
+            VerificationResult(
+                finding_id=finding.finding_id,
+                verdict=Verdict.NEEDS_HUMAN,
+                reasoning="Arguably on point; a lawyer must decide.",
+            )
+        ],
+        overturned=[],
+    )
+    assert report.unresolved == ["NDA-004"]
+
+
+def test_confirmed_findings_are_not_unresolved() -> None:
+    finding = _finding(FindingStatus.MISSING, Severity.HIGH, "NDA-006")
+    report = build_report(
+        contract_id="NDA-8812",
+        source_file="nda.pdf",
+        audit_id="aud_1",
+        rules_evaluated=1,
+        findings=[finding],
+        verifications=[
+            VerificationResult(
+                finding_id=finding.finding_id,
+                verdict=Verdict.CONFIRMED,
+                reasoning="Searched exhaustively; genuinely absent.",
+            )
+        ],
+        overturned=[],
+    )
+    assert report.unresolved == []
 
 
 def test_markdown_reports_a_clean_contract() -> None:

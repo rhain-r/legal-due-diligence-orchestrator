@@ -9,7 +9,7 @@
   <img alt="Claude" src="https://img.shields.io/badge/reasoning-Claude%20Sonnet-D97757">
   <img alt="Gemini" src="https://img.shields.io/badge/verification-Gemini-4285F4?logo=google&logoColor=white">
   <img alt="Pydantic v2" src="https://img.shields.io/badge/validation-Pydantic%20v2-E92063">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-83%20passing-2ea043">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-85%20passing-2ea043">
   <img alt="Evaluated" src="https://img.shields.io/badge/eval-6%20golden%20contracts-8957e5">
   <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
@@ -139,7 +139,7 @@ agent/
 ├── prompts/           system prompts, on disk so they show up in diffs
 ├── rules/             compliance SOPs as YAML
 ├── evals/             golden contracts, answer keys, scoring harness
-└── tests/             83 tests, all against stubbed clients
+└── tests/             85 tests, all against stubbed clients
 assets/                architecture diagram
 docs/                  architecture · compliance-rules · setup-guide · build-plan
 ```
@@ -208,7 +208,7 @@ uv run pytest
 ```
 
 ```
-83 passed in 1.19s
+85 passed in 1.10s
 ```
 
 The suite runs entirely against `StubClient`. Tests target rejection paths, not just
@@ -241,7 +241,7 @@ verification ladder harder to express. It also keeps the test suite free and off
 ## Status and honest limitations
 
 **Working:** ingestion, tools, workers, orchestrator, verification loop, reporting,
-CLI, eval harness. 83 tests passing, `ruff` clean.
+CLI, eval harness. 85 tests passing, `ruff` clean.
 
 **Never measured against real models.** Every number above comes from deterministic
 stand-ins. The system is wired for Claude and Gemini and will run against them, but

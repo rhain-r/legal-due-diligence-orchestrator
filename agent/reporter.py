@@ -19,6 +19,7 @@ from agent.schemas import (
     AuditReport,
     Finding,
     FindingStatus,
+    Verdict,
     VerificationResult,
 )
 
@@ -67,10 +68,14 @@ def build_report(
     page_count: int = 0,
 ) -> AuditReport:
     """Assemble the final validated report."""
+    # Derived from verdicts, not from rendered prose. Substring-matching the
+    # rationale would silently stop working the moment the orchestrator reworded
+    # its prefix, and escalated findings would quietly read as settled.
+    escalated_ids = {v.finding_id for v in verifications if v.verdict is Verdict.NEEDS_HUMAN}
     unresolved = [
         f.rule_id
         for f in findings
-        if f.status is FindingStatus.AMBIGUOUS or "[needs human review]" in f.rationale
+        if f.status is FindingStatus.AMBIGUOUS or f.finding_id in escalated_ids
     ]
     return AuditReport(
         audit_id=audit_id,
