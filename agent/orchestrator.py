@@ -226,7 +226,10 @@ class Orchestrator:
         rules_by_id = {r.rule_id: r for r in rules}
         verifier = VerifierAgent(self.verifier_client, self.settings)
 
-        to_check = [f for f in findings if f.status in (FindingStatus.MISSING, FindingStatus.PRESENT)]
+        to_check = [
+            f for f in findings 
+            if f.status in (FindingStatus.MISSING, FindingStatus.PRESENT)
+        ]
         tracer.emit("verification_queue", count=len(to_check), total_findings=len(findings))
 
         semaphore = asyncio.Semaphore(self.settings.worker_concurrency)
@@ -266,10 +269,19 @@ class Orchestrator:
             result = verdicts.get(finding.finding_id)
             if result is None or result.verdict is Verdict.CONFIRMED:
                 surviving.append(finding)
-                elif result.verdict is Verdict.OVERTURNED:
-                new_status = FindingStatus.PRESENT if finding.status == FindingStatus.MISSING else FindingStatus.MISSING
+            elif result.verdict is Verdict.OVERTURNED:
+                # Wrap long assignments in parentheses to break them across lines
+                new_status = (
+                    FindingStatus.PRESENT 
+                    if finding.status == FindingStatus.MISSING 
+                    else FindingStatus.MISSING
+                )
                 
-                new_citations = [c.model_dump() for c in result.counter_citations] if new_status == FindingStatus.PRESENT else []
+                new_citations = (
+                    [c.model_dump() for c in result.counter_citations] 
+                    if new_status == FindingStatus.PRESENT 
+                    else []
+                )
 
                 overturned.append(finding)
                 surviving.append(

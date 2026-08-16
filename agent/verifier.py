@@ -64,11 +64,18 @@ class VerifierAgent:
         )
         
         # Append specific instructions based on what we are trying to disprove
+       # Append specific instructions based on what we are trying to disprove
         if finding.status == FindingStatus.PRESENT:
-            return base_prompt + "\n\nThe worker claims this clause is PRESENT. Your job is to PROVE THEM WRONG by finding negations, loopholes, or fine print that invalidates their claim."
+            return base_prompt + (
+                "\n\nThe worker claims this clause is PRESENT. Your job is to PROVE "
+                "THEM WRONG by finding negations, loopholes, or fine print that "
+                "invalidates their claim."
+            )
         else:
-            return base_prompt + "\n\nThe worker claims this clause is MISSING. Your job is to PROVE THEM WRONG by finding the clause hidden in the text."
-
+            return base_prompt + (
+                "\n\nThe worker claims this clause is MISSING. Your job is to PROVE "
+                "THEM WRONG by finding the clause hidden in the text."
+            )
     def _candidate_ladder(
         self, rule: ComplianceRule, blocks: list[TextBlock]
     ) -> list[tuple[SearchStrategy, list[TextBlock]]]:
@@ -103,12 +110,14 @@ class VerifierAgent:
 
             try:
                 # Dynamically set the question based on the claim
+               # Dynamically set the question based on the claim
                 if finding.status == FindingStatus.PRESENT:
                     question = (
                         f"## Retrieval strategy: {strategy.value}\n"
                         f"## Blocks retrieved: {len(candidates)}\n\n"
                         f"{excerpt}\n\n"
-                        f"Read carefully. Does any language above explicitly negate, invalidate, or loophole this obligation: {rule.description}?"
+                        "Read carefully. Does any language above explicitly negate, "
+                        f"invalidate, or loophole this obligation: {rule.description}?"
                     )
                 else:
                     question = (
@@ -176,10 +185,12 @@ class VerifierAgent:
             )
 
         # Determine the correct confirmation message
+# Determine the correct confirmation message
         if finding.status == FindingStatus.PRESENT:
             final_reasoning = (
                 f"Reviewed via {', '.join(s.value for s in strategies_used)} across "
-                f"{len(blocks)} blocks. The clause appears valid; no negations or loopholes were found."
+                f"{len(blocks)} blocks. The clause appears valid; no negations or "
+                "loopholes were found."
             )
         else:
             final_reasoning = (
