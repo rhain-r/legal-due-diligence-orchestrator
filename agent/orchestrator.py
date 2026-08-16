@@ -249,6 +249,16 @@ class Orchestrator:
         results = [r for r in await asyncio.gather(*(challenge_one(f) for f in to_check)) if r]
         verdicts = {r.finding_id: r for r in results}
 
+        def revise(finding: Finding, **update) -> Finding:
+            """Rewrite a finding *through* validation.
+
+            `model_copy(update=...)` does not validate, which would let the one
+            code path that changes a finding's status emit a schema-invalid
+            Finding — a PRESENT finding with no citations is precisely what
+            `_enforce_evidentiary_rules` exists to forbid.
+            """
+            return Finding.model_validate({**finding.model_dump(), **update})
+
         surviving: list[Finding] = []
         overturned: list[Finding] = []
 
@@ -261,27 +271,27 @@ class Orchestrator:
                 # discarding it, and keep the original in the audit trail.
                 overturned.append(finding)
                 surviving.append(
-                    finding.model_copy(
-                        update={
-                            "status": FindingStatus.PRESENT,
-                            "citations": result.counter_citations,
-                            "evidence": None,
-                            "rationale": f"[overturned by verifier] {result.reasoning}",
-                            "confidence": 0.9,
-                            "agent_name": "verifier",
-                        }
+                    revise(
+                        finding,
+                        status=FindingStatus.PRESENT,
+                        citations=[c.model_dump() for c in result.counter_citations],
+                        evidence=None,
+                        rationale=f"[overturned by verifier] {result.reasoning}",
+                        confidence=0.9,
+                        agent_name="verifier",
                     )
                 )
             else:  # NEEDS_HUMAN
+                # An escalated finding keeps whatever evidence it already carried,
+                # so the MISSING branch stays schema-valid.
                 surviving.append(
-                    finding.model_copy(
-                        update={
-                            "status": FindingStatus.AMBIGUOUS
-                            if finding.citations
-                            else FindingStatus.MISSING,
-                            "rationale": f"[needs human review] {result.reasoning}",
-                            "confidence": 0.5,
-                        }
+                    revise(
+                        finding,
+                        status=FindingStatus.AMBIGUOUS
+                        if finding.citations
+                        else FindingStatus.MISSING,
+                        rationale=f"[needs human review] {result.reasoning}",
+                        confidence=0.5,
                     )
                 )
 

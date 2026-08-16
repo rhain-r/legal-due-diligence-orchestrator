@@ -125,9 +125,27 @@ def parse_blocks(prompt: str) -> list[tuple[str, str]]:
     return [(m.group("id"), m.group("text")) for m in _BLOCK_RE.finditer(prompt)]
 
 
+class PromptFormatError(RuntimeError):
+    """The prompt no longer carries the field the stand-in reads."""
+
+
 def parse_clause_name(system: str) -> str:
+    """Extract the clause under review from a system prompt.
+
+    Raises rather than returning "" on a miss. A silent empty string would make
+    every stand-in return a fixed answer — all `missing` from the worker, never
+    overturned by the verifier — and the harness would print a full set of
+    plausible, entirely different numbers with a zero exit code. Published eval
+    figures are worth an exception here.
+    """
     match = _CLAUSE_RE.search(system)
-    return match.group("clause").strip() if match else ""
+    if not match or not match.group("clause").strip():
+        raise PromptFormatError(
+            "Could not find '**Clause:** <name>' in the system prompt. The simulated "
+            "agents parse the same prompt a model reads, so a change to "
+            "agent/prompts/*.md must be mirrored in agent/evals/simulated.py."
+        )
+    return match.group("clause").strip()
 
 
 def _tokens(phrase: str) -> list[str]:
