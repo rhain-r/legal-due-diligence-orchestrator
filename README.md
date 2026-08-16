@@ -1,18 +1,4 @@
-<h1 align="center">Legal Due Diligence Orchestrator</h1>
-
-<p align="center">
-  <strong>A multi-agent AI system that audits legal contracts against a firm's compliance SOP — then argues with itself to make sure it's right.</strong>
-</p>
-
-<p align="center">
-  <img alt="Python 3.10–3.13" src="https://img.shields.io/badge/python-3.10--3.13-3776AB?logo=python&logoColor=white">
-  <img alt="Claude" src="https://img.shields.io/badge/reasoning-Claude%20Sonnet-D97757">
-  <img alt="Gemini" src="https://img.shields.io/badge/verification-Gemini-4285F4?logo=google&logoColor=white">
-  <img alt="Pydantic v2" src="https://img.shields.io/badge/validation-Pydantic%20v2-E92063">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-85%20passing-2ea043">
-  <img alt="Evaluated" src="https://img.shields.io/badge/eval-6%20golden%20contracts-8957e5">
-  <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue">
-</p>
+## Legal Due Diligence Orchestrator
 
 ---
 ## Why This Matters:
