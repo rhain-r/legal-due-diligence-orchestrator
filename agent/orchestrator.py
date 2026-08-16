@@ -226,7 +226,7 @@ class Orchestrator:
         rules_by_id = {r.rule_id: r for r in rules}
         verifier = VerifierAgent(self.verifier_client, self.settings)
 
-        to_check = [f for f in findings if f.needs_verification]
+        to_check = [f for f in findings if f.status in (FindingStatus.MISSING, FindingStatus.PRESENT)]
         tracer.emit("verification_queue", count=len(to_check), total_findings=len(findings))
 
         semaphore = asyncio.Semaphore(self.settings.worker_concurrency)
@@ -266,15 +266,17 @@ class Orchestrator:
             result = verdicts.get(finding.finding_id)
             if result is None or result.verdict is Verdict.CONFIRMED:
                 surviving.append(finding)
-            elif result.verdict is Verdict.OVERTURNED:
-                # The clause was located after all. Rewrite the finding rather than
-                # discarding it, and keep the original in the audit trail.
+                elif result.verdict is Verdict.OVERTURNED:
+                new_status = FindingStatus.PRESENT if finding.status == FindingStatus.MISSING else FindingStatus.MISSING
+                
+                new_citations = [c.model_dump() for c in result.counter_citations] if new_status == FindingStatus.PRESENT else []
+
                 overturned.append(finding)
                 surviving.append(
                     revise(
                         finding,
-                        status=FindingStatus.PRESENT,
-                        citations=[c.model_dump() for c in result.counter_citations],
+                        status=new_status,
+                        citations=new_citations,
                         evidence=None,
                         rationale=f"[overturned by verifier] {result.reasoning}",
                         confidence=0.9,

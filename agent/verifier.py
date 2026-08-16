@@ -24,6 +24,7 @@ from agent.llm import ModelClient, ModelError, complete_structured
 from agent.schemas import (
     ComplianceRule,
     Finding,
+    FindingStatus,
     SearchStrategy,
     TextBlock,
     Verdict,
@@ -55,12 +56,18 @@ class VerifierAgent:
 
     def _system_prompt(self, rule: ComplianceRule, finding: Finding) -> str:
         terms = finding.evidence.terms_searched if finding.evidence else []
-        return load_prompt("verifier").format(
+        base_prompt = load_prompt("verifier").format(
             clause_name=rule.clause_name,
             description=rule.description,
             rationale=finding.rationale,
             terms_searched=", ".join(terms) or "(not recorded)",
         )
+        
+        # Append specific instructions based on what we are trying to disprove
+        if finding.status == FindingStatus.PRESENT:
+            return base_prompt + "\n\nThe worker claims this clause is PRESENT. Your job is to PROVE THEM WRONG by finding negations, loopholes, or fine print that invalidates their claim."
+        else:
+            return base_prompt + "\n\nThe worker claims this clause is MISSING. Your job is to PROVE THEM WRONG by finding the clause hidden in the text."
 
     def _candidate_ladder(
         self, rule: ComplianceRule, blocks: list[TextBlock]
@@ -95,15 +102,26 @@ class VerifierAgent:
             excerpt = "\n\n".join(f"[{b.block_id} | {b.locator}]\n{b.text}" for b in candidates)
 
             try:
-                response = await complete_structured(
-                    self.client,
-                    system,
-                    (
+                # Dynamically set the question based on the claim
+                if finding.status == FindingStatus.PRESENT:
+                    question = (
+                        f"## Retrieval strategy: {strategy.value}\n"
+                        f"## Blocks retrieved: {len(candidates)}\n\n"
+                        f"{excerpt}\n\n"
+                        f"Read carefully. Does any language above explicitly negate, invalidate, or loophole this obligation: {rule.description}?"
+                    )
+                else:
+                    question = (
                         f"## Retrieval strategy: {strategy.value}\n"
                         f"## Blocks retrieved: {len(candidates)}\n\n"
                         f"{excerpt}\n\n"
                         f"Does any language above create this obligation: {rule.description}?"
-                    ),
+                    )
+
+                response = await complete_structured(
+                    self.client,
+                    system,
+                    question,
                     VerifierResponse,
                     max_tokens=self.settings.max_output_tokens,
                 )
@@ -157,14 +175,23 @@ class VerifierAgent:
                 verifier_model=self.client.name,
             )
 
+        # Determine the correct confirmation message
+        if finding.status == FindingStatus.PRESENT:
+            final_reasoning = (
+                f"Reviewed via {', '.join(s.value for s in strategies_used)} across "
+                f"{len(blocks)} blocks. The clause appears valid; no negations or loopholes were found."
+            )
+        else:
+            final_reasoning = (
+                f"Searched via {', '.join(s.value for s in strategies_used)} across "
+                f"{len(blocks)} blocks. No language creating this obligation was located."
+            )
+
         return VerificationResult(
             finding_id=finding.finding_id,
             verdict=Verdict.CONFIRMED,
             strategies_used=strategies_used,
-            reasoning=(
-                f"Searched via {', '.join(s.value for s in strategies_used)} across "
-                f"{len(blocks)} blocks. No language creating this obligation was located."
-            ),
+            reasoning=final_reasoning,
             verifier_model=self.client.name,
         )
 
