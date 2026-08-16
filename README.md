@@ -1,5 +1,7 @@
 ## Legal Due Diligence Orchestrator
-Automates the highest-risk phase of legal due diligence using adversarial LLMs to eliminate the "false negative" blind spot. It turns a manual, paralegal-heavy bottleneck into a scalable, auditable pipeline that accelerates deal closures, protects firms from malpractice, and increases profit margins.
+An Agentic AI system that operates as an autonomous legal due diligence orchestrator. Unlike linear automations, this multi-agent architecture utilizes an adversarial reasoning loop to audit complex contracts, make independent decisions about compliance risks, and use tools to securely parse documents, verify absence claims, and generate deterministic risk reports.
+
+Instead of manually skimming hundreds of pages to prove what an agreement doesn't say, this system gives AI agents access to your legal documents and compliance rulebooks, allowing them to execute your firm's Standard Operating Procedures (SOPs) autonomously while actively preventing "lazy LLM" false negatives.
 
 ---
 ## Why This Matters:
