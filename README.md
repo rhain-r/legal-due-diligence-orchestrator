@@ -1,5 +1,5 @@
 ## Legal Due Diligence Orchestrator
-A multi-agent AI pipeline for legal due diligence that uses adversarial verification to prevent false negatives in contract reviews.
+Automates the highest-risk phase of legal due diligence using adversarial LLMs to eliminate the "false negative" blind spot. It turns a manual, paralegal-heavy bottleneck into a scalable, auditable pipeline that accelerates deal closures, protects firms from malpractice, and increases profit margins.
 
 ---
 ## Why This Matters:
@@ -259,6 +259,4 @@ which is why `needs_human` exists.
 | [setup-guide.md](docs/setup-guide.md) | Install, configure, run, troubleshoot |
 | [build-plan.md](docs/build-plan.md) | Phase-by-phase build log and remaining work |
 
-## Purpose
-To automate the tedious, high-risk "absence-checking" phase of legal due diligence by deploying adversarial AI agents that fact-check each other's work before generating a final report.
 
