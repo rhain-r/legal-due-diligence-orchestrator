@@ -270,47 +270,51 @@ class Orchestrator:
             if result is None or result.verdict is Verdict.CONFIRMED:
                 surviving.append(finding)
             elif result.verdict is Verdict.OVERTURNED:
-                # Wrap long assignments in parentheses to break them across lines
-                new_status = (
+                # Flip the status: MISSING becomes PRESENT, PRESENT becomes MISSING
+                    new_status = (
                     FindingStatus.PRESENT 
                     if finding.status == FindingStatus.MISSING 
                     else FindingStatus.MISSING
                 )
                 
-                new_citations = (
+                    new_citations = (
                     [c.model_dump() for c in result.counter_citations] 
                     if new_status == FindingStatus.PRESENT 
                     else []
                 )
 
-                overturned.append(finding)
-                surviving.append(
-                    revise(
+                # Pydantic strictly requires evidence for any MISSING claim
+                    new_evidence = (
+                    None 
+                    if new_status == FindingStatus.PRESENT 
+                    else {"strategy": "full_text", "blocks_examined": len(blocks)}
+                )
+
+        overturned.append(finding)
+        surviving.append(
+                 revise(
                         finding,
                         status=new_status,
                         citations=new_citations,
-                        evidence=None,
+                        evidence=new_evidence,
                         rationale=f"[overturned by verifier] {result.reasoning}",
                         confidence=0.9,
                         agent_name="verifier",
                     )
                 )
-            else:  # NEEDS_HUMAN
-                # An escalated finding keeps whatever evidence it already carried,
-                # so the MISSING branch stays schema-valid.
-                surviving.append(
-                    revise(
-                        finding,
-                        status=FindingStatus.AMBIGUOUS
-                        if finding.citations
-                        else FindingStatus.MISSING,
-                        rationale=f"[needs human review] {result.reasoning}",
-                        confidence=0.5,
-                    )
+        
+        surviving.append(
+                revise(
+                    finding,
+                    status=FindingStatus.AMBIGUOUS
+                    if finding.citations
+                    else FindingStatus.MISSING,
+                    rationale=f"[needs human review] {result.reasoning}",
+                    confidence=0.5,
                 )
+           )
 
         return results, surviving, overturned
-
 
 async def run_audit(
     pdf_path: str | Path,
