@@ -1,5 +1,5 @@
 ## Legal Due Diligence Orchestrator
-
+****A multi-agent AI pipeline for legal due diligence that uses adversarial verification to prevent false negatives in contract reviews.
 ---
 ## Why This Matters:
 * **Eliminates False Negatives:** Prevents the most dangerous failure mode in AI contract review—quietly missing missing clauses.
