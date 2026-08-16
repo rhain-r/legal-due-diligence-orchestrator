@@ -15,7 +15,12 @@
 </p>
 
 ---
+## Why This Matters:
+* **Eliminates False Negatives:** Prevents the most dangerous failure mode in AI contract review—quietly missing missing clauses.
+* **Reduces Paralegal Load:** Automates the tedious "absence-checking" phase of legal due diligence.
+* **Auditable & Deterministic:** Every AI decision is backed by schema-enforced citations and deterministic Python scoring.
 
+---
 ## The problem
 
 Contract review tools are good at telling you what a document **says**. The expensive
@@ -71,26 +76,27 @@ uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose
 
 </details>
 
-## What makes it more than a RAG wrapper
+## Engineering Challenges Solved
 
-| Capability | Why it matters |
-| --- | --- |
-| **Adversarial verification** | The verifier must use a strategy the worker didn't, and is prompted to *find* the clause rather than confirm its absence. Re-asking the same way is agreement, not verification. |
-| **Cross-model second opinion** | Workers reason on Claude; the verifier runs on Gemini. Two independently trained models converging on "absent" is real evidence. One model agreeing with itself is not. |
-| **Citation gate** | `cite_source()` verifies a quote appears in the source before minting a `Citation`. An agent can hallucinate a quote; it cannot hallucinate a citation. |
-| **Schema-enforced integrity** | A `MISSING` finding carrying a document quote raises a `ValidationError` — the claim is self-contradictory. `extra="forbid"` turns invented fields into errors. |
-| **Anchored parsing** | `(page, ¶, §)` survives parsing and chunking, so citations point at somewhere a lawyer can actually open. |
-| **Three verdicts, not two** | `needs_human` is a first-class outcome. A flagged ambiguity costs a five-minute review; a wrong "confirmed" costs a missed liability. |
-| **Deterministic scoring** | Risk score is a Python function of severity and status — auditable, explainable, unit-tested. Not a number an LLM felt like emitting. |
+Building autonomous agents for legal tech requires overcoming severe LLM limitations. Here is how this system handles them:
+
+* **The "Lazy LLM" Problem:** A model skimming a 90-page MSA will often say "no clause found" just to save compute. 
+  * *Solution:* **Adversarial Verification.** The verifier is forced to use a different retrieval strategy (synonym search + section scans) and a different model (Gemini vs. Claude), with the burden of proof inverted.
+* **Hallucinated Quotes:** LLMs notoriously invent text that sounds legally plausible.
+  * *Solution:* **Citation Gates.** A custom `cite_source()` function verifies quotes against the anchored `(page, ¶, §)` source text before minting a Citation object. 
+* **Self-Contradictory JSON:** Agents often output a status of "MISSING" while providing a quote of the clause.
+  * *Solution:* **Schema-Enforced Integrity.** Pydantic v2 with `extra="forbid"` throws a `ValidationError` if an agent submits logically impossible combinations.
 
 ## Quick start
 
-```bash
-git clone https://github.com/rhain-r/legal-due-diligence-orchestrator.git
-```
+**Prerequisites:**
+* [uv](https://docs.astral.sh/uv/) installed on your machine.
+* API Keys for Anthropic and Google Gemini (for the full audit).
 
 ```bash
-cd legal-due-diligence-orchestrator && uv sync
+git clone [https://github.com/rhain-r/legal-due-diligence-orchestrator.git](https://github.com/rhain-r/legal-due-diligence-orchestrator.git)
+cd legal-due-diligence-orchestrator
+uv sync
 ```
 
 `uv` fetches its own CPython 3.12 — your system Python is untouched.
@@ -266,6 +272,5 @@ which is why `needs_human` exists.
 | [setup-guide.md](docs/setup-guide.md) | Install, configure, run, troubleshoot |
 | [build-plan.md](docs/build-plan.md) | Phase-by-phase build log and remaining work |
 
-## License
 
 MIT — see [LICENSE](LICENSE).
