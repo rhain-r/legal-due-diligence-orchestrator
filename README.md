@@ -3,8 +3,6 @@ An Agentic AI system that operates as an autonomous legal due diligence orchestr
 
 Instead of manually skimming hundreds of pages to prove what an agreement doesn't say, this system gives AI agents access to your legal documents and compliance rulebooks, allowing them to execute your firm's Standard Operating Procedures (SOPs) autonomously while actively preventing "lazy LLM" false negatives.
 
-**▶ [Interactive walkthrough](https://rhain-r.github.io/legal-due-diligence-orchestrator/)** — see the system catch a real miss, in plain English. No install required.
-
 ---
 
 ## Why This Matters:
@@ -42,6 +40,12 @@ uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose
 
 ```
 
+## Interface Demonstration (Click for better visual experience)
+
+| [Interactive walkthrough](https://rhain-r.github.io/legal-due-diligence-orchestrator/) | A guided walkthrough |
+| --- | ---|
+---
+
 ## Architecture
 
 ![Agent architecture](assets/architecture.svg)
@@ -73,8 +77,6 @@ uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose
 ---
 
 ## Challenges Solved
-
-Building autonomous agents for legal tech requires overcoming severe LLM limitations. Here is how this system handles them:
 
 * **The "Lazy LLM" Problem:** A model skimming a 90-page MSA will often say "no clause found" just to save compute. 
   * *Solution:* **Adversarial Verification.** The verifier is forced to use a different retrieval strategy (synonym search + section scans) and a different model (Gemini vs. Claude), with the burden of proof inverted.
@@ -162,7 +164,6 @@ reassuring heading — over a clause that negates itself — is never contradict
 is the architecture's real structural blind spot, and it now has a number on it.
 Symmetric verification of presence claims is the highest-value next change.
 
-Full breakdown, including every error itemised: [`agent/evals/`](agent/evals/).
 Raw results: [`agent/evals/results/`](agent/evals/results/).
 
 ---
@@ -178,8 +179,6 @@ Raw results: [`agent/evals/results/`](agent/evals/results/).
 | Orchestration | Purpose-built `asyncio` | See below |
 | Tooling | `uv`, `pytest`, `ruff`, `typer`, `rich` | |
 | Built with | Claude Code | See [build plan](docs/build-plan.md) |
-
----
 
 ## Documentation
 
