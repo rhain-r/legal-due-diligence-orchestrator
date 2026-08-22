@@ -5,13 +5,6 @@ Instead of manually skimming hundreds of pages to prove what an agreement doesn'
 
 ---
 
-## Why This Matters:
-* **Eliminates False Negatives:** Prevents the most dangerous failure mode in AI contract review—quietly missing missing clauses.
-* **Reduces Paralegal Load:** Automates the tedious "absence-checking" phase of legal due diligence.
-* **Auditable & Deterministic:** Every AI decision is backed by schema-enforced citations and deterministic Python scoring.
-
----
-
 ## The problem
 
 Contract review tools are good at telling you what a document **says**. The expensive
@@ -33,14 +26,7 @@ of proof inverted — before the finding is allowed into the report.
 
 ![Verification loop recovering eight clauses](assets/demo.svg)
 
-Try it out! (no API key required):
-
-```bash
-uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose
-
-```
-
-## Interface Demonstration (Click for better visual experience)
+## Try it out!
 
 | [Live &rarr;](https://rhain-r.github.io/legal-due-diligence-orchestrator/) | A guided walkthrough |
 | --- | ---|
@@ -90,49 +76,7 @@ uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose
 
 ---
 
-## Repository layout
-
-```
-agent/
-├── schemas.py         message contracts — the architecture lives here
-├── config.py          models, keys, limits; nothing hardcoded elsewhere
-├── llm.py             provider adapters + structured output with retry
-├── orchestrator.py    plan → dispatch → route → trace
-├── workers.py         one clause domain each
-├── verifier.py        the adversarial loop
-├── reporter.py        scoring, JSON, terminal, markdown
-├── sop.py             YAML rule loading
-├── ingestion/         PDF → anchored blocks → chunks   (no LLM calls)
-├── tools/             cite_source(), retrieval strategies (no LLM calls)
-├── prompts/           system prompts, on disk so they show up in diffs
-├── rules/             compliance SOPs as YAML
-├── evals/             golden contracts, answer keys, scoring harness
-└── tests/             85 tests, all against stubbed clients
-assets/                architecture diagram
-docs/                  architecture · compliance-rules · setup-guide · build-plan
-```
-
----
-
 ## Evaluation
-
-Six synthetic contracts, 48 rule checks, each with a YAML answer key recording which
-obligations are genuinely present and which were deliberately removed. The set
-includes the two traps that matter: clauses **present but renamed**, and clauses that
-**look present but are negated by their own wording**.
-
-```bash
-uv run python -m agent.evals.run
-```
-
-> **What these numbers are.** No API keys were used. The agents are deterministic
-> lexical stand-ins, so this measures **pipeline recovery behaviour** — the retrieval
-> ladder, citation gate, and verdict routing, all real code — and **not** model
-> accuracy. Swapping in Claude and Gemini would produce different numbers, and those
-> would be the ones worth quoting about models. The stand-ins never read an answer key.
-
-Positive class is an absence claim, so a false positive is *"we told the client their
-cap on damages is missing when it wasn't"*.
 
 | Worker | | Precision | Recall | F1 | FP | FN |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -140,31 +84,6 @@ cap on damages is missing when it wasn't"*.
 | Keyword-blind | **+ verification** | **0.462** | **0.667** | **0.546** | **7** | **3** |
 | Synonym-aware | workers only | 0.417 | 0.556 | 0.477 | 7 | 4 |
 | Synonym-aware | + verification | 0.417 | 0.556 | 0.477 | 7 | 4 |
-
-**21 overturns, 21 correct, 0 incorrect.** The verifier never once rescued a gap that
-was genuinely there — the failure mode that would make verification worse than useless.
-
-### What the evaluation actually found
-
-**1. Verifier lift is inversely proportional to synonym quality.** Against a
-keyword-blind worker it eliminated 14 of 21 false absence claims. Against a
-synonym-aware worker it eliminated **zero**, because the worker had already caught
-them. Actionable conclusion: *invest in the SOP's synonym lists first.* Verification
-is the safety net for what synonyms miss, not a substitute for writing them well.
-
-**2. All 7 remaining false positives are on one contract** — the one whose every
-clause is renamed ("Protected Material" for Confidential Information, "Applicable
-Regime" for Governing Law). A lexical verifier cannot bridge that gap. **This is
-precisely the work a real model does**, and it's the clearest evidence here of where
-the simulation's ceiling sits.
-
-**3. Every false negative is a false-*presence* claim the verifier never saw.**
-By design it challenges absence claims only, so a worker that confidently matches a
-reassuring heading — over a clause that negates itself — is never contradicted. That
-is the architecture's real structural blind spot, and it now has a number on it.
-Symmetric verification of presence claims is the highest-value next change.
-
-Raw results: [`agent/evals/results/`](agent/evals/results/).
 
 ---
 
