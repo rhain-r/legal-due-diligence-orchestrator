@@ -42,7 +42,7 @@ uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose
 
 ## Interface Demonstration (Click for better visual experience)
 
-| [Live &rarr;h](https://rhain-r.github.io/legal-due-diligence-orchestrator/) | A guided walkthrough |
+| [Live &rarr;](https://rhain-r.github.io/legal-due-diligence-orchestrator/) | A guided walkthrough |
 | --- | ---|
 ---
 
