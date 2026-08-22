@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legal Due Diligence Orchestrator — catching what contract AI misses</title>
+<meta name="description" content="An AI system that reviews contracts, then makes a second AI try to prove the first one wrong. Interactive walkthrough with measured results.">
+<meta property="og:title" content="Legal Due Diligence Orchestrator">
+<meta property="og:description" content="AI misses things in contracts. This catches it — and measures how often.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ink:#0B1020; --ink-2:#121A2E; --ink-3:#1A2440; --ink-4:#212C4C;
+  --line:#26314F; --line-soft:#1C2540;
+  --text:#EDF1FA; --muted:#9AA8C7; --dim:#66769C;
+  --good:#34D399; --warn:#F5A524; --bad:#F87189; --find:#8E99F9; --seal:#D4B24A;
+  --f-display:"Newsreader",Georgia,serif;
+  --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px; --r-lg:12px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ink); color:var(--text);
+  font-family:var(--f-ui); font-size:17px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0; font-family:var(--f-display); font-weight:500; line-height:1.15; text-wrap:balance}
+p{margin:0}
+button{font:inherit; color:inherit; background:none; border:none; cursor:pointer}
+a{color:var(--seal)}
+:focus-visible{outline:2px solid var(--seal); outline-offset:3px; border-radius:3px}
+.tnum{font-variant-numeric:tabular-nums}
+.wrap{max-width:1000px; margin:0 auto; padding:0 24px}
+@media(max-width:600px){body{font-size:16px}.wrap{padding:0 18px}}
+
+.eyebrow{font-family:var(--f-mono); font-size:.75rem; letter-spacing:.14em; text-transform:uppercase; color:var(--seal); margin-bottom:14px}
+.lede{color:var(--muted); font-size:1.125rem; max-width:60ch}
+section{padding:76px 0; border-bottom:1px solid var(--line-soft)}
+.sec-h{font-size:2rem; letter-spacing:-.02em; margin-bottom:16px}
+@media(max-width:600px){section{padding:56px 0}.sec-h{font-size:1.6rem}}
+
+/* header */
+.top{position:sticky; top:0; z-index:60; background:rgba(11,16,32,.94); backdrop-filter:blur(12px); border-bottom:1px solid var(--line)}
+.top-in{display:flex; align-items:center; gap:16px; height:62px}
+.mark{display:flex; align-items:center; gap:10px; margin-right:auto; text-decoration:none; color:var(--text)}
+.mark svg{flex:none}
+.mark b{font-family:var(--f-display); font-size:1.0625rem; font-weight:600; white-space:nowrap}
+@media(max-width:560px){.mark b{font-size:.95rem}}
+.switch{display:inline-flex; align-items:center; gap:9px; font-size:.8125rem; color:var(--muted); cursor:pointer; user-select:none; white-space:nowrap}
+.switch input{position:absolute; opacity:0; pointer-events:none}
+.track{width:38px; height:21px; border-radius:11px; background:var(--ink-3); box-shadow:inset 0 0 0 1px var(--line); position:relative; transition:background .2s; flex:none}
+.track::after{content:""; position:absolute; top:3px; left:3px; width:15px; height:15px; border-radius:50%; background:var(--dim); transition:transform .2s,background .2s}
+.switch input:checked + .track{background:rgba(212,178,74,.25)}
+.switch input:checked + .track::after{transform:translateX(17px); background:var(--seal)}
+.switch input:focus-visible + .track{outline:2px solid var(--seal); outline-offset:2px}
+@media(max-width:700px){.switch .lbl{display:none}}
+.gh{display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border:1px solid var(--line); border-radius:var(--r); background:var(--ink-2); font-size:.875rem; font-weight:500; text-decoration:none; color:var(--text); transition:.15s; white-space:nowrap}
+.gh:hover{background:var(--ink-3); border-color:var(--ink-4)}
+
+/* hero */
+.hero{padding:84px 0 68px; position:relative; overflow:hidden; border-bottom:1px solid var(--line-soft)}
+.hero::before{content:""; position:absolute; inset:0; background:radial-gradient(700px 320px at 15% -15%, rgba(142,153,249,.14), transparent 70%); pointer-events:none}
+.hero-in{position:relative}
+.hero h1{font-size:3.4rem; letter-spacing:-.03em; max-width:15ch; margin-bottom:22px}
+@media(max-width:700px){.hero{padding:56px 0 48px}.hero h1{font-size:2.25rem}}
+.cta{display:flex; gap:12px; margin-top:32px; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:var(--r); border:1px solid var(--line); background:var(--ink-2); font-size:.9375rem; font-weight:500; text-decoration:none; color:var(--text); transition:.15s}
+.btn:hover{background:var(--ink-3); border-color:var(--ink-4)}
+.btn-go{background:var(--seal); color:#1A1403; border-color:var(--seal); font-weight:600}
+.btn-go:hover{background:#E4C25C; border-color:#E4C25C}
+.facts{display:flex; gap:34px; margin-top:44px; flex-wrap:wrap; padding-top:26px; border-top:1px solid var(--line-soft)}
+.fact-n{font-family:var(--f-display); font-size:1.9rem; font-weight:600; letter-spacing:-.02em; line-height:1}
+.fact-l{font-size:.8125rem; color:var(--dim); margin-top:6px; max-width:20ch}
+
+/* shared card */
+.card{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--ink-2); padding:26px 28px}
+@media(max-width:600px){.card{padding:20px}}
+
+/* section 1 — the problem */
+.ask{font-family:var(--f-display); font-size:1.5rem; font-style:italic; color:var(--text); margin-bottom:24px; max-width:32ch}
+.ans{display:flex; gap:16px; align-items:flex-start; padding:20px 22px; border-radius:var(--r-lg); background:var(--ink-3); border:1px solid var(--line)}
+.ans-ic{width:30px; height:30px; flex:none; margin-top:1px}
+.ans-t{font-weight:600; font-size:1.0625rem}
+.ans-d{color:var(--muted); font-size:.9375rem; margin-top:4px}
+.reveal{margin-top:18px}
+.snip{
+  border:1px solid var(--good); border-radius:var(--r-lg); background:rgba(52,211,153,.06);
+  padding:22px 24px; margin-top:18px;
+}
+.snip-loc{font-family:var(--f-mono); font-size:.75rem; color:var(--good); letter-spacing:.06em; margin-bottom:10px}
+.snip-t{font-family:var(--f-display); font-size:1.0625rem; line-height:1.7}
+.snip-t mark{background:rgba(52,211,153,.24); color:var(--text); padding:1px 3px; border-radius:3px}
+.punch{margin-top:20px; font-size:1.0625rem; color:var(--muted); max-width:62ch}
+.punch b{color:var(--text); font-weight:600}
+[hidden]{display:none !important}
+
+/* steps */
+.steps{display:grid; gap:14px; margin-top:8px}
+.step{display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:start; padding:24px 26px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--ink-2)}
+@media(max-width:600px){.step{padding:20px; gap:14px}}
+.step-n{
+  width:38px; height:38px; border-radius:50%; flex:none; display:grid; place-items:center;
+  font-family:var(--f-mono); font-size:.9375rem; color:var(--seal);
+  background:rgba(212,178,74,.10); box-shadow:inset 0 0 0 1px rgba(212,178,74,.35);
+}
+.step h3{font-size:1.25rem; letter-spacing:-.01em}
+.step-tech{font-family:var(--f-mono); font-size:.6875rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-top:5px}
+.step p{color:var(--muted); margin-top:10px; max-width:62ch}
+
+/* demo */
+.stage{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--ink-2); overflow:hidden}
+.stage-top{display:flex; align-items:center; gap:14px; padding:16px 22px; border-bottom:1px solid var(--line); background:var(--ink-3); flex-wrap:wrap}
+.stage-doc{font-family:var(--f-mono); font-size:.8125rem; color:var(--muted)}
+.stage-doc b{color:var(--text); font-weight:500}
+.play{margin-left:auto; display:inline-flex; align-items:center; gap:9px; padding:9px 18px; border-radius:var(--r); background:var(--seal); color:#1A1403; font-weight:600; font-size:.875rem; transition:.15s}
+.play:hover{background:#E4C25C}
+.play[disabled]{opacity:.5; cursor:default}
+.narr{padding:26px 24px; min-height:96px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--line-soft)}
+.narr-n{font-family:var(--f-mono); font-size:.75rem; color:var(--dim); flex:none; padding-top:3px}
+.narr-t{font-family:var(--f-display); font-size:1.25rem; line-height:1.45; max-width:56ch}
+@media(max-width:600px){.narr-t{font-size:1.0625rem}}
+.timeline{display:flex; gap:4px; padding:0 24px 18px}
+.tick{height:3px; flex:1; border-radius:2px; background:var(--line); transition:background .3s}
+.tick.on{background:var(--seal)}
+.out{padding:22px 24px; display:grid; gap:12px}
+.line{display:flex; gap:14px; align-items:flex-start; padding:14px 16px; border-radius:var(--r); border:1px solid var(--line-soft); background:var(--ink); opacity:0; transform:translateY(6px); transition:opacity .35s,transform .35s}
+.line.on{opacity:1; transform:none}
+.line-ic{width:20px; height:20px; flex:none; margin-top:2px}
+.line-t{font-size:.9375rem}
+.line-d{font-family:var(--f-mono); font-size:.75rem; color:var(--dim); margin-top:4px}
+.line.win{border-color:var(--good); background:rgba(52,211,153,.07)}
+.line.miss{border-color:var(--bad); background:rgba(248,113,137,.07)}
+.line.warn{border-color:var(--warn); background:rgba(245,165,36,.07)}
+.pick{display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; align-items:center}
+.pick-l{font-size:.8125rem; color:var(--dim); margin-right:2px}
+.chip{padding:8px 14px; border:1px solid var(--line); border-radius:999px; background:var(--ink-2); font-size:.8125rem; transition:.15s}
+.chip:hover{background:var(--ink-3)}
+.chip[aria-pressed="true"]{background:var(--ink-4); border-color:var(--c,var(--seal)); color:var(--text)}
+.chip i{font-style:normal; color:var(--c,var(--dim)); margin-right:7px}
+
+/* results */
+.compare{display:grid; gap:18px; margin-top:6px}
+.cmp{display:grid; grid-template-columns:170px 1fr auto; gap:18px; align-items:center}
+@media(max-width:640px){.cmp{grid-template-columns:1fr; gap:6px}}
+.cmp-l{font-size:.9375rem; color:var(--muted)}
+.cmp-l b{display:block; color:var(--text); font-weight:600}
+.cmp-bar{height:34px; background:var(--ink); border-radius:var(--r); overflow:hidden; box-shadow:inset 0 0 0 1px var(--line-soft)}
+.cmp-bar i{display:block; height:100%; border-radius:var(--r); transition:width 1s cubic-bezier(.4,0,.2,1)}
+.cmp-v{font-family:var(--f-display); font-size:1.5rem; font-weight:600; min-width:96px; text-align:right}
+@media(max-width:640px){.cmp-v{text-align:left}}
+.headline{
+  margin-top:26px; padding:24px 26px; border-radius:var(--r-lg);
+  border:1px solid var(--good); background:rgba(52,211,153,.07);
+  font-family:var(--f-display); font-size:1.375rem; line-height:1.45; max-width:64ch;
+}
+.headline b{color:var(--good); font-weight:600}
+.disclose{margin-top:22px}
+.disclose summary{cursor:pointer; font-size:.9375rem; color:var(--muted); padding:12px 0; list-style:none; display:flex; align-items:center; gap:9px}
+.disclose summary::-webkit-details-marker{display:none}
+.disclose summary::before{content:"+"; font-family:var(--f-mono); color:var(--seal); font-size:1.125rem; line-height:1}
+.disclose[open] summary::before{content:"–"}
+.disclose summary:hover{color:var(--text)}
+table{width:100%; border-collapse:collapse; font-size:.875rem; margin-top:10px}
+th,td{text-align:left; padding:11px 12px; border-bottom:1px solid var(--line-soft)}
+th{font-family:var(--f-mono); font-size:.6875rem; letter-spacing:.09em; text-transform:uppercase; color:var(--dim); font-weight:500}
+td{font-variant-numeric:tabular-nums; color:var(--muted)}
+td:first-child{color:var(--text)}
+.tw{overflow-x:auto}
+
+/* honest */
+.honest{border:1px solid var(--warn); border-radius:var(--r-lg); background:rgba(245,165,36,.06); padding:26px 28px; display:flex; gap:18px}
+@media(max-width:600px){.honest{padding:20px; flex-direction:column; gap:12px}}
+.honest h3{font-size:1.25rem; color:var(--warn); margin-bottom:10px}
+.honest p{color:var(--muted); max-width:62ch}
+.honest p + p{margin-top:12px}
+
+/* try */
+.pre{background:#070B16; border:1px solid var(--line); border-radius:var(--r-lg); padding:18px 20px; font-family:var(--f-mono); font-size:.8125rem; line-height:1.9; overflow-x:auto; color:var(--muted); margin-top:12px}
+.pre .p{color:var(--good)} .pre .c{color:var(--text)} .pre .d{color:var(--dim)}
+.links{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:26px}
+.link{display:block; padding:18px 20px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--ink-2); text-decoration:none; color:var(--text); transition:.15s}
+.link:hover{background:var(--ink-3); border-color:var(--ink-4)}
+.link b{display:block; font-weight:600; margin-bottom:4px}
+.link span{font-size:.8125rem; color:var(--dim)}
+
+footer{padding:44px 0 64px; color:var(--dim); font-size:.875rem}
+.tech-only{display:none}
+body.tech .tech-only{display:revert}
+body.tech .step-tech{color:var(--seal)}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important} html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap top-in">
+    <a class="mark" href="#top">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 1.6 3.4 5.2v6.3c0 5.3 3.6 9.9 8.6 11.1 5-1.2 8.6-5.8 8.6-11.1V5.2z" stroke="#D4B24A" stroke-width="1.3" fill="rgba(212,178,74,.09)"/>
+        <path d="M8.1 12.1l2.7 2.7 5.1-5.6" stroke="#D4B24A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <b>Due Diligence Orchestrator</b>
+    </a>
+    <label class="switch">
+      <input type="checkbox" id="techToggle">
+      <span class="track"></span>
+      <span class="lbl">Technical details</span>
+    </label>
+    <a class="gh" href="https://github.com/rhain-r/legal-due-diligence-orchestrator">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0a8 8 0 00-2.5 15.6c.4 0 .5-.2.5-.4v-1.4c-2 .5-2.5-.9-2.5-.9-.4-.9-.9-1.1-.9-1.1-.7-.5 0-.5 0-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.3.7 0-.5.3-.9.5-1.1-1.6-.2-3.3-.8-3.3-3.6 0-.8.3-1.5.8-2 0-.2-.4-.9.1-2 0 0 .6-.2 2 .7a7 7 0 013.6 0c1.4-.9 2-.7 2-.7.5 1.1.1 1.8.1 2 .5.5.8 1.2.8 2 0 2.8-1.7 3.4-3.3 3.6.3.2.5.7.5 1.4v2.1c0 .2.1.4.5.4A8 8 0 008 0z"/></svg>
+      Code
+    </a>
+  </div>
+</div>
+
+<header class="hero" id="top">
+  <div class="wrap hero-in">
+    <p class="eyebrow">Multi-agent contract review</p>
+    <h1>AI misses things. This catches it.</h1>
+    <p class="lede">Ask an AI whether a contract protects you, and <em>“I didn't find it”</em> looks exactly like <em>“it isn't there.”</em> One of those is fine. The other can cost you a lawsuit. This project makes a second AI try to prove the first one wrong — and measures how often that saves you.</p>
+    <div class="cta">
+      <a class="btn btn-go" href="#problem">Show me the problem</a>
+      <a class="btn" href="#demo">Watch it work</a>
+    </div>
+    <div class="facts">
+      <div><div class="fact-n" style="color:var(--find)">21</div><div class="fact-l">mistakes caught by the second AI</div></div>
+      <div><div class="fact-n" style="color:var(--good)">0</div><div class="fact-l">times it wrongly cleared a real problem</div></div>
+      <div><div class="fact-n">6</div><div class="fact-l">test contracts, 48 checks, answers known in advance</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="problem">
+  <div class="wrap">
+    <p class="eyebrow">Part one</p>
+    <h2 class="sec-h">The problem, in one example</h2>
+    <p class="lede" style="margin-bottom:34px">Here is a question a lawyer asks about every contract that crosses their desk.</p>
+
+    <p class="ask">“If this deal goes wrong, is there a limit on how much we could be sued for?”</p>
+
+    <div class="ans">
+      <svg class="ans-ic" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" stroke="#F87189" stroke-width="1.4" fill="rgba(248,113,137,.1)"/>
+        <path d="M11.5 11.5l9 9M20.5 11.5l-9 9" stroke="#F87189" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <p class="ans-t">The AI answers: “No limit on damages found.”</p>
+        <p class="ans-d">It read the contract. It was 80% confident. It sounds authoritative.</p>
+        <p class="ans-d tech-only" style="font-family:var(--f-mono);font-size:.75rem;color:var(--dim);margin-top:8px">liability_worker · status=MISSING · confidence=0.80 · 34 blocks examined</p>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <button class="btn" id="revealBtn">Is that true? Check page 4 &rarr;</button>
+    </div>
+
+    <div id="revealBox" hidden>
+      <div class="snip">
+        <p class="snip-loc">FOUND — PAGE 4, SECTION 18, HEADED “MISCELLANEOUS”</p>
+        <p class="snip-t">“Save in respect of fraud or death or personal injury caused by negligence, the total aggregate liability of each Party arising under or in connection with this Agreement <mark>shall not exceed the charges paid</mark> under the relevant Statement of Work in the twelve (12) months preceding the event giving rise to the claim.”</p>
+      </div>
+      <p class="punch"><b>The limit was there all along.</b> It sits four pages away from anything labelled “liability”, under a heading that means nothing, and its wording never uses the words <em>limit</em>, <em>cap</em>, or <em>damages</em>. The AI did not lie — it just did not look hard enough. And from its answer alone, you could not tell the difference.</p>
+      <p class="punch" style="margin-top:14px">That is the failure this project exists to catch.</p>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">Part two</p>
+    <h2 class="sec-h">How it works, in three steps</h2>
+    <p class="lede" style="margin-bottom:34px">No step requires you to trust the AI's word for anything.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">1</div>
+        <div>
+          <h3>Read the contract, and remember where everything is</h3>
+          <p class="step-tech">Ingestion &middot; no AI involved</p>
+          <p>The contract is split into paragraphs, and every paragraph keeps its page number and section number attached. That way, any answer later on can point back to the exact spot it came from. This step is ordinary code, not AI, so it behaves the same way every single time.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <div>
+          <h3>Check the contract against a checklist, one item at a time</h3>
+          <p class="step-tech">Worker agents &middot; Claude</p>
+          <p>The firm writes a checklist — “must limit liability”, “must say which country's law applies”, and so on. A separate AI handles each item. Crucially, to claim an item is covered, it has to <strong>quote the contract word for word</strong>. If the quote doesn't actually appear in the document, the claim is thrown away.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <div>
+          <h3>Get a second AI to try to prove the first one wrong</h3>
+          <p class="step-tech">Adversarial verification &middot; Gemini</p>
+          <p>Whenever the first AI says “this is missing”, a second AI — built by a different company — searches the whole contract again, using different words. Its job is not to agree. Its job is to <strong>find the clause</strong>. If it finds one real example, the first AI's answer is overturned.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <p class="eyebrow">Part three</p>
+    <h2 class="sec-h">Watch it work</h2>
+    <p class="lede" style="margin-bottom:30px">Press play. Each step is one thing the system actually did.</p>
+
+    <div class="stage">
+      <div class="stage-top">
+        <span class="stage-doc">Contract: <b id="docName"></b></span>
+        <span class="stage-doc" id="docQ"></span>
+        <button class="play" id="playBtn">▶ Play</button>
+      </div>
+      <div class="narr"><span class="narr-n" id="narrN">—</span><p class="narr-t" id="narrT">Press play to walk through this case one step at a time.</p></div>
+      <div class="timeline" id="timeline"></div>
+      <div class="out" id="out"></div>
+    </div>
+
+    <div class="pick" id="pick">
+      <span class="pick-l">Try another case:</span>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <p class="eyebrow">Part four</p>
+    <h2 class="sec-h">Did it actually work?</h2>
+    <p class="lede" style="margin-bottom:34px">Six contracts were written with the answers known in advance, then run through the system — 48 checks in total. A “false alarm” means the system told you something was missing when it was really there.</p>
+
+    <div class="card">
+      <div class="compare">
+        <div class="cmp">
+          <div class="cmp-l"><b>Without the second AI</b>first AI alone</div>
+          <div class="cmp-bar"><i id="barA" style="width:0;background:var(--bad)"></i></div>
+          <div class="cmp-v" style="color:var(--bad)">21 <span style="font-size:.8125rem;font-family:var(--f-ui);color:var(--dim);font-weight:400">false alarms</span></div>
+        </div>
+        <div class="cmp">
+          <div class="cmp-l"><b>With the second AI</b>after double-checking</div>
+          <div class="cmp-bar"><i id="barB" style="width:0;background:var(--good)"></i></div>
+          <div class="cmp-v" style="color:var(--good)">7 <span style="font-size:.8125rem;font-family:var(--f-ui);color:var(--dim);font-weight:400">false alarms</span></div>
+        </div>
+      </div>
+
+      <p class="headline">The second AI overturned <b>21 findings</b>. Every one of those 21 was correct — it never once wrongly cleared a problem that was genuinely there.</p>
+
+      <details class="disclose tech-only">
+        <summary>Show the technical metrics</summary>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Configuration</th><th>Precision</th><th>Recall</th><th>F1</th><th>False pos.</th><th>False neg.</th></tr></thead>
+            <tbody>
+              <tr><td>Workers only</td><td>0.222</td><td>0.667</td><td>0.333</td><td>21</td><td>3</td></tr>
+              <tr><td>+ verification</td><td>0.462</td><td>0.667</td><td>0.546</td><td>7</td><td>3</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.875rem;color:var(--dim);margin-top:14px;max-width:62ch">Positive class is an absence claim. Run with deterministic stand-in agents rather than live models, so these figures characterise the pipeline's recovery behaviour — not model accuracy. The system has never been benchmarked against Claude and Gemini, and no such claim is made.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="limits">
+  <div class="wrap">
+    <p class="eyebrow">Part five</p>
+    <h2 class="sec-h">Where it still fails</h2>
+    <p class="lede" style="margin-bottom:30px">A review tool that only shows you its wins is not a review tool.</p>
+
+    <div class="honest">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true" style="flex:none">
+        <path d="M16 4.5l13 22.5H3z" stroke="#F5A524" stroke-width="1.5" stroke-linejoin="round" fill="rgba(245,165,36,.1)"/>
+        <path d="M16 13.5v5.5M16 22.6v.3" stroke="#F5A524" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h3>It only double-checks the “not found” answers</h3>
+        <p>If the first AI says <em>“yes, this is covered”</em>, nobody challenges it. So a contract with a section headed “Limitation of Liability” whose text actually says <em>“nothing shall limit either party's liability”</em> sails straight through. The heading reassures; the body does the opposite.</p>
+        <p>All three remaining mistakes in the test set are exactly this shape. The fix — challenging “found it” answers the same way — is the next thing to build. Until then the number stays published rather than hidden.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="try">
+  <div class="wrap">
+    <p class="eyebrow">Part six</p>
+    <h2 class="sec-h">Run it yourself</h2>
+    <p class="lede">No API key needed for the first two commands — they use built-in sample contracts and cost nothing.</p>
+    <div class="pre">
+<span class="d"># get set up</span>
+<span class="p">$</span> <span class="c">git clone https://github.com/rhain-r/legal-due-diligence-orchestrator</span>
+<span class="p">$</span> <span class="c">cd legal-due-diligence-orchestrator &amp;&amp; uv sync</span>
+
+<span class="d"># see a contract get parsed — no AI, no key, no cost</span>
+<span class="p">$</span> <span class="c">uv run ldd inspect agent/tests/fixtures/sample_nda.pdf</span>
+
+<span class="d"># watch the second AI overturn eight findings</span>
+<span class="p">$</span> <span class="c">uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose</span>
+    </div>
+    <div class="links">
+      <a class="link" href="https://github.com/rhain-r/legal-due-diligence-orchestrator"><b>Source code</b><span>Python, 85 tests, MIT licensed</span></a>
+      <a class="link" href="https://github.com/rhain-r/legal-due-diligence-orchestrator/blob/main/docs/architecture.md"><b>How it's built</b><span>Architecture and known limitations</span></a>
+      <a class="link" href="https://github.com/rhain-r/legal-due-diligence-orchestrator/blob/main/docs/setup-guide.md"><b>Setup guide</b><span>Install, configure, troubleshoot</span></a>
+      <a class="link" href="https://github.com/rhain-r/legal-due-diligence-orchestrator/blob/main/docs/compliance-rules.md"><b>Write your own checklist</b><span>The rule format, explained</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Legal Due Diligence Orchestrator — multi-agent contract review with adversarial verification.<br>
+    Python 3.12 · Pydantic · Claude + Gemini · MIT licensed · Built with Claude Code.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+var CASES = [
+  {
+    id:"win", name:"msa_buried.pdf", c:"var(--find)", label:"The AI was wrong",
+    q:"Is there a limit on damages?",
+    steps:[
+      {n:"Step 1", t:"The first AI reads only the sections it was assigned, looking for a limit on damages.",
+       line:{k:"", t:"Reading 34 paragraphs across 4 pages", d:"liability_worker · claude"}},
+      {n:"Step 2", t:"It reports back: nothing found. It is 80% confident, and it is wrong.",
+       line:{k:"miss", t:"“No limit on damages found.”", d:"status = MISSING · confidence 0.80"}},
+      {n:"Step 3", t:"Because it claimed something was missing, the challenger is sent in — a different AI, from a different company.",
+       line:{k:"", t:"Second AI takes over", d:"gemini · searching the whole document, not just assigned sections"}},
+      {n:"Step 4", t:"It searches again using other ways of saying the same thing — “shall not exceed”, “aggregate liability”, “in no event”.",
+       line:{k:"", t:"12 alternative phrasings tried", d:"strategy 1 of 3 · synonym search"}},
+      {n:"Step 5", t:"Found it. Page 4, section 18, hiding under the heading “Miscellaneous”.",
+       line:{k:"win", t:"“…shall not exceed the charges paid…”", d:"page 4 · section 18 · paragraph 7"}},
+      {n:"Result", t:"The first AI's answer is overturned. The client is not told their protection is missing when it is not.",
+       line:{k:"win", t:"OVERTURNED — the clause exists", d:"1 of the 21 mistakes caught in testing"}}
+    ]
+  },
+  {
+    id:"gap", name:"nda_synonym_trap.pdf", c:"var(--bad)", label:"The AI was right",
+    q:"Must materials be returned?",
+    steps:[
+      {n:"Step 1", t:"The contract has a section actually headed “Return of Materials”. Promising.",
+       line:{k:"", t:"Section 5 found by heading", d:"confidentiality_worker · claude"}},
+      {n:"Step 2", t:"But reading it, the section only says the parties “acknowledge the importance” of handling materials well. It does not require anything.",
+       line:{k:"miss", t:"“No obligation to return materials.”", d:"status = MISSING · confidence 0.80"}},
+      {n:"Step 3", t:"The challenger tries all three of its search strategies, one after another.",
+       line:{k:"", t:"Synonyms → catch-all sections → whole document", d:"3 strategies · 26 paragraphs · 0 hits"}},
+      {n:"Step 4", t:"It finds the topic mentioned twice, and rejects both. Saying a duty matters is not agreeing to one.",
+       line:{k:"warn", t:"Topic mentioned, no duty created", d:"recitals + section 5 heading — both rejected"}},
+      {n:"Result", t:"The first AI was right. The gap is real, and now it comes with a record of everything that was tried to disprove it.",
+       line:{k:"miss", t:"CONFIRMED — genuinely missing", d:"reported to the client with full search evidence"}}
+    ]
+  },
+  {
+    id:"blind", name:"nda_scoped_out.pdf", c:"var(--warn)", label:"Nobody checked",
+    q:"Is there a limit on damages?",
+    steps:[
+      {n:"Step 1", t:"This contract has a section headed “Limitation of Liability”. The first AI sees the heading and is reassured.",
+       line:{k:"", t:"Section 8 matches the checklist item", d:"liability_worker · claude"}},
+      {n:"Step 2", t:"But the text underneath says the opposite: nothing shall limit either party's liability, and each stays fully liable.",
+       line:{k:"warn", t:"“Nothing… shall operate to limit, exclude, or cap…”", d:"page 3 · section 8 — the heading lies"}},
+      {n:"Step 3", t:"The first AI reports it as covered, with high confidence.",
+       line:{k:"miss", t:"“Limit on damages: covered.”", d:"status = PRESENT · confidence 0.90"}},
+      {n:"Step 4", t:"And here the system fails. The challenger is only sent after “not found” answers — so it was never called.",
+       line:{k:"warn", t:"Challenger not dispatched", d:"verification covers absence claims only"}},
+      {n:"Result", t:"A real gap goes unreported. This is the system's known weakness, and the reason its published score is not perfect.",
+       line:{k:"warn", t:"MISSED — and published anyway", d:"all 3 remaining errors have this shape"}}
+    ]
+  }
+];
+
+var ix = 0, step = -1, timer = null;
+function $(s){return document.querySelector(s);}
+
+function renderPick(){
+  var p = $("#pick");
+  p.innerHTML = '<span class="pick-l">Try another case:</span>' + CASES.map(function(c,i){
+    return '<button class="chip" data-case="'+i+'" aria-pressed="'+(ix===i)+'" style="--c:'+c.c+'"><i>●</i>'+c.label+'</button>';
+  }).join("");
+}
+
+function renderStage(){
+  var c = CASES[ix];
+  $("#docName").textContent = c.name;
+  $("#docQ").textContent = "Checking: " + c.q;
+  $("#timeline").innerHTML = c.steps.map(function(_,i){
+    return '<span class="tick'+(i<=step?" on":"")+'"></span>';
+  }).join("");
+  if(step < 0){
+    $("#narrN").textContent = "—";
+    $("#narrT").textContent = "Press play to walk through this case one step at a time.";
+    $("#out").innerHTML = "";
+    return;
+  }
+  var s = c.steps[step];
+  $("#narrN").textContent = s.n;
+  $("#narrT").textContent = s.t;
+
+  var html = "";
+  for(var i=0;i<=step;i++){
+    var L = c.steps[i].line, k = L.k;
+    var ic = k==="win"
+      ? '<svg class="line-ic" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#34D399" stroke-width="1.3"/><path d="M6 10.3l2.6 2.6L14 7.4" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : k==="miss"
+      ? '<svg class="line-ic" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#F87189" stroke-width="1.3"/><path d="M7 7l6 6M13 7l-6 6" stroke="#F87189" stroke-width="1.7" stroke-linecap="round"/></svg>'
+      : k==="warn"
+      ? '<svg class="line-ic" viewBox="0 0 20 20" fill="none"><path d="M10 2.5l8 15H2z" stroke="#F5A524" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 8.5v3.4M10 14.3v.2" stroke="#F5A524" stroke-width="1.6" stroke-linecap="round"/></svg>'
+      : '<svg class="line-ic" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="#66769C" stroke-width="1.3"/><circle cx="10" cy="10" r="3" fill="#66769C"/></svg>';
+    html += '<div class="line on '+(k||"")+'">'+ic+'<div><p class="line-t">'+L.t+'</p><p class="line-d">'+L.d+'</p></div></div>';
+  }
+  $("#out").innerHTML = html;
+}
+
+function play(){
+  clearTimeout(timer);
+  var c = CASES[ix];
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  step = -1;
+  $("#playBtn").disabled = true;
+  $("#playBtn").textContent = "Playing…";
+  function next(){
+    step += 1;
+    renderStage();
+    if(step < c.steps.length - 1){
+      timer = setTimeout(next, reduce ? 0 : 2100);
+    } else {
+      $("#playBtn").disabled = false;
+      $("#playBtn").textContent = "↻ Replay";
+    }
+  }
+  next();
+}
+
+document.addEventListener("click", function(e){
+  var t = e.target.closest("#playBtn,[data-case],#revealBtn");
+  if(!t) return;
+  if(t.id === "playBtn"){ play(); return; }
+  if(t.id === "revealBtn"){
+    $("#revealBox").hidden = false;
+    t.hidden = true;
+    return;
+  }
+  if(t.hasAttribute("data-case")){
+    ix = +t.getAttribute("data-case");
+    clearTimeout(timer);
+    step = -1;
+    $("#playBtn").disabled = false;
+    $("#playBtn").textContent = "▶ Play";
+    renderPick(); renderStage();
+    play();
+  }
+});
+
+$("#techToggle").addEventListener("change", function(e){
+  document.body.classList.toggle("tech", e.target.checked);
+});
+
+/* animate the comparison bars when they scroll into view */
+var seen = false;
+function bars(){
+  if(seen) return;
+  var el = $("#barA");
+  if(!el) return;
+  var r = el.getBoundingClientRect();
+  if(r.top < window.innerHeight - 60){
+    seen = true;
+    $("#barA").style.width = "100%";
+    $("#barB").style.width = "33%";
+  }
+}
+window.addEventListener("scroll", bars, {passive:true});
+
+renderPick(); renderStage(); bars();
+})();
+</script>
+</body>
+</html>

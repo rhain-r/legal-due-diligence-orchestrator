@@ -3,6 +3,8 @@ An Agentic AI system that operates as an autonomous legal due diligence orchestr
 
 Instead of manually skimming hundreds of pages to prove what an agreement doesn't say, this system gives AI agents access to your legal documents and compliance rulebooks, allowing them to execute your firm's Standard Operating Procedures (SOPs) autonomously while actively preventing "lazy LLM" false negatives.
 
+**▶ [Interactive walkthrough](https://rhain-r.github.io/legal-due-diligence-orchestrator/)** — see the system catch a real miss, in plain English. No install required.
+
 ---
 
 ## Why This Matters:
