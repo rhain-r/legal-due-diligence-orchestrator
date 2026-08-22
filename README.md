@@ -4,12 +4,14 @@ An Agentic AI system that operates as an autonomous legal due diligence orchestr
 Instead of manually skimming hundreds of pages to prove what an agreement doesn't say, this system gives AI agents access to your legal documents and compliance rulebooks, allowing them to execute your firm's Standard Operating Procedures (SOPs) autonomously while actively preventing "lazy LLM" false negatives.
 
 ---
+
 ## Why This Matters:
 * **Eliminates False Negatives:** Prevents the most dangerous failure mode in AI contract review—quietly missing missing clauses.
 * **Reduces Paralegal Load:** Automates the tedious "absence-checking" phase of legal due diligence.
 * **Auditable & Deterministic:** Every AI decision is backed by schema-enforced citations and deterministic Python scoring.
 
 ---
+
 ## The problem
 
 Contract review tools are good at telling you what a document **says**. The expensive
@@ -27,14 +29,15 @@ reports a missing clause triggers a verifier that re-reads the document with a
 deliberately *different* retrieval strategy, on a *different* model, with the burden
 of proof inverted — before the finding is allowed into the report.
 
-## The loop, doing its job
+## Backend Demonstration
 
 ![Verification loop recovering eight clauses](assets/demo.svg)
 
-Reproduce it yourself — no API key required:
+Try it out! (no API key required):
 
 ```bash
 uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose
+
 ```
 
 ## Architecture
@@ -65,57 +68,23 @@ uv run ldd audit agent/evals/golden/build/msa_buried.pdf --simulate --verbose
 
 </details>
 
-## Engineering Challenges Solved
+---
+
+## Challenges Solved
 
 Building autonomous agents for legal tech requires overcoming severe LLM limitations. Here is how this system handles them:
 
 * **The "Lazy LLM" Problem:** A model skimming a 90-page MSA will often say "no clause found" just to save compute. 
   * *Solution:* **Adversarial Verification.** The verifier is forced to use a different retrieval strategy (synonym search + section scans) and a different model (Gemini vs. Claude), with the burden of proof inverted.
+ <br></br>
 * **Hallucinated Quotes:** LLMs notoriously invent text that sounds legally plausible.
-  * *Solution:* **Citation Gates.** A custom `cite_source()` function verifies quotes against the anchored `(page, ¶, §)` source text before minting a Citation object. 
+  * *Solution:* **Citation Gates.** A custom `cite_source()` function verifies quotes against the anchored `(page, ¶, §)` source text before minting a Citation object.
+<br></br>
 * **Self-Contradictory JSON:** Agents often output a status of "MISSING" while providing a quote of the clause.
   * *Solution:* **Schema-Enforced Integrity.** Pydantic v2 with `extra="forbid"` throws a `ValidationError` if an agent submits logically impossible combinations.
+<br></br>
 
-## Quick start
-
-**Prerequisites:**
-* [uv](https://docs.astral.sh/uv/) installed on your machine.
-* API Keys for Anthropic and Google Gemini (for the full audit).
-
-```bash
-git clone [https://github.com/rhain-r/legal-due-diligence-orchestrator.git](https://github.com/rhain-r/legal-due-diligence-orchestrator.git)
-cd legal-due-diligence-orchestrator
-uv sync
-```
-
-`uv` fetches its own CPython 3.12 — your system Python is untouched.
-
-**Try it with no API key.** `inspect` parses a contract and shows its structure:
-
-```bash
-uv run ldd inspect agent/tests/fixtures/sample_nda.pdf
-```
-
-```
-sample_nda.pdf — 3 pages, 63 blocks, 9 sections, 1 chunks
-┌───────┬───────┬──────────────────┬───────┐
-│ Chunk │ Pages │ Sections         │ Chars │
-├───────┼───────┼──────────────────┼───────┤
-│ c000  │ 1–3   │ 1, 2, 3, 4, 5, 6 │  3968 │
-└───────┴───────┴──────────────────┴───────┘
-```
-
-Then add keys to `.env` (see [setup guide](docs/setup-guide.md)) and run a full audit:
-
-```bash
-uv run ldd audit agent/tests/fixtures/sample_nda.pdf --markdown --verbose
-```
-
-The bundled synthetic NDA is built to demonstrate the loop: its **cap on damages is
-present but buried in "General Provisions"** and worded without the words *cap*,
-*damages*, or *limitation of liability*. Expect a worker to report it missing and the
-verifier to overturn that. Return-of-materials and injunctive relief are genuinely
-absent and should survive as confirmed gaps.
+---
 
 ## Repository layout
 
@@ -139,9 +108,7 @@ assets/                architecture diagram
 docs/                  architecture · compliance-rules · setup-guide · build-plan
 ```
 
-Roughly two-thirds of the system is deterministic Python. Everything that *can* be a
-tested function instead of a prompt, is one — which is why the whole suite runs in
-under a second with no API key and no cost.
+---
 
 ## Evaluation
 
@@ -173,7 +140,7 @@ cap on damages is missing when it wasn't"*.
 **21 overturns, 21 correct, 0 incorrect.** The verifier never once rescued a gap that
 was genuinely there — the failure mode that would make verification worse than useless.
 
-### What the eval actually found
+### What the evaluation actually found
 
 **1. Verifier lift is inversely proportional to synonym quality.** Against a
 keyword-blind worker it eliminated 14 of 21 false absence claims. Against a
@@ -196,23 +163,7 @@ Symmetric verification of presence claims is the highest-value next change.
 Full breakdown, including every error itemised: [`agent/evals/`](agent/evals/).
 Raw results: [`agent/evals/results/`](agent/evals/results/).
 
-## Testing
-
-```bash
-uv run pytest
-```
-
-```
-85 passed in 1.10s
-```
-
-The suite runs entirely against `StubClient`. Tests target rejection paths, not just
-happy paths: fabricated quotes, `MISSING` findings carrying citations, verifier
-overturns it can't quote, and verifier crashes that must not read as agreement.
-
-The load-bearing test is `test_verifier_overturns_a_false_absence_claim` — a contract
-where the clause is present but shares no keywords with its own name. If that test
-stops passing, the architecture no longer earns its cost.
+---
 
 ## Tech stack
 
@@ -226,31 +177,7 @@ stops passing, the architecture no longer earns its cost.
 | Tooling | `uv`, `pytest`, `ruff`, `typer`, `rich` | |
 | Built with | Claude Code | See [build plan](docs/build-plan.md) |
 
-**On agent frameworks.** The orchestration here is purpose-built rather than delegated
-to AutoGen or LangGraph. `agent/llm.py` defines a one-method `ModelClient` protocol,
-so an adapter for any framework is a single class — nothing in schemas, ingestion,
-tools, or reporting moves. The delegation logic is ~40 lines of `asyncio.gather` under
-a semaphore; a framework wouldn't have made that shorter, and would have made the
-verification ladder harder to express. It also keeps the test suite free and offline.
-
-## Status and honest limitations
-
-**Working:** ingestion, tools, workers, orchestrator, verification loop, reporting,
-CLI, eval harness. 85 tests passing, `ruff` clean.
-
-**Never measured against real models.** Every number above comes from deterministic
-stand-ins. The system is wired for Claude and Gemini and will run against them, but
-it has not been, so no claim about model accuracy appears anywhere in this repo.
-
-**The verifier only challenges absence claims.** False-presence claims — a clause that
-looks present under a matching heading but is negated in its body — pass straight
-through. Quantified above; fixing it is the top of the backlog.
-
-Other known limits, in full: [architecture.md § Known limitations](docs/architecture.md#known-limitations).
-Scanned PDFs need OCR upstream. Chunk assignment is lexical rather than embedding-based.
-Cross-model verification degrades to a same-model check if only one API key is
-configured. Two models with overlapping training data can still share a blind spot —
-which is why `needs_human` exists.
+---
 
 ## Documentation
 
